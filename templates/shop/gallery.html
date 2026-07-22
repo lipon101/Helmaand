@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="gold-text">Product Gallery</h2>
+        <p class="text-secondary">Browse our latest collections. Use <code>#product=&lt;slug&gt;</code> in the URL to highlight a product.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for product in featured_products %}
+        <div class="col-md-3">
+            <div class="card card-dark h-100 p-3" data-slug="{{ product.slug }}">
+                <div class="card-body text-center">
+                    <h6 class="text-light">{{ product.name }}</h6>
+                    <p class="gold-text fw-bold">${{ product.price }}</p>
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-outline-gold btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center text-muted">
+            <p>No products yet. Run <code>python manage.py seed_data</code> to add demo content.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr class="border-secondary my-4">
+    <div class="text-center">
+        <p class="text-secondary small">Selected product (from URL hash):</p>
+        <!-- VULNERABLE (XSS - DOM): JavaScript below reads location.hash and writes
+             it into this div's innerHTML without any sanitization. The payload
+             never touches the server, so WAF/server-side filters can't catch it.
+             Try: /gallery/#<img src=x onerror="alert('DOM XSS')">
+        -->
+        <div id="product-highlight" class="card card-dark p-4">
+            <p class="text-muted mb-0">No product selected. Add <code>#product=...</code> to the URL.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // NOTE: intentionally vulnerable DOM XSS sink
+    function highlightProduct() {
+        var hash = decodeURIComponent(window.location.hash.slice(1)); // strip leading #
+        var el = document.getElementById('product-highlight');
+        // Direct innerHTML assignment of user-controlled data — classic DOM XSS
+        if (hash) {
+            el.innerHTML = hash;
+        } else {
+            el.innerHTML = '<p class="text-muted mb-0">No product selected. Add <code>#product=...</code> to the URL.</p>';
+        }
+    }
+    window.addEventListener('hashchange', highlightProduct);
+    window.addEventListener('load', highlightProduct);
+</script>
+{% endblock %}

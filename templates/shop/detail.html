@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow h-100">
+                <div class="card-body text-center">
+                    <h2 class="gold-text">{{ product.name }}</h2>
+                    <p class="text-secondary">{{ product.brand }} &middot; {{ product.category.name }}</p>
+                    <hr class="border-secondary">
+                    <p class="text-light">{{ product.description }}</p>
+                    <p class="gold-text fw-bold fs-4">${{ product.get_price }}</p>
+                    <p class="text-secondary small">Size: {{ product.size }} | Color: {{ product.color }}</p>
+                    <p class="text-secondary small">In stock: {{ product.stock }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow">
+                <h4 class="gold-text mb-3">Customer Reviews</h4>
+
+                <div id="reviews">
+                    {% for review in reviews %}
+                    <div class="border border-secondary rounded p-3 mb-3">
+                        <strong class="text-light">{{ review.user.username }}</strong>
+                        <span class="text-secondary small">&middot; {{ review.rating }}/5 &middot; {{ review.created_at|date:"M d, Y" }}</span>
+                        <!-- VULNERABLE: comment is rendered with |safe, allowing stored XSS -->
+                        <div class="text-light mt-2">{{ review.comment|safe }}</div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No reviews yet. Be the first to review!</p>
+                    {% endfor %}
+                </div>
+
+                {% if user.is_authenticated %}
+                <hr class="border-secondary my-4">
+                <h5 class="gold-text">Write a Review</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-light">Rating</label>
+                        <select name="rating" class="form-select">
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3">3 - Average</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="1">1 - Terrible</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-light">Comment</label>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="Share your thoughts..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-gold">Post Review</button>
+                </form>
+                {% else %}
+                <p class="text-muted mt-3">
+                    <a href="{% url 'accounts:login' %}" class="gold-text">Login</a> to write a review.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

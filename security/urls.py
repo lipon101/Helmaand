@@ -1,8 +1,9 @@
 from django.urls import path
-from django.http import HttpResponse
+from . import views
 
 app_name = 'security'
 
 urlpatterns = [
-    path('lab/', lambda r: HttpResponse("Security Lab"), name='lab_index'),
+    path('', views.lab_index, name='lab_index'),
+    path('vault/', views.vault_view, name='vault'),
 ]

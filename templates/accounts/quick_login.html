@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Quick Login | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="text-center gold-text mb-4">Quick Login</h2>
+                <p class="text-secondary small text-center mb-3">
+                    A simplified login for returning customers.
+                </p>
+                <!-- VULNERABLE (CSRF - Login CSRF): no {% csrf_token %} and the view is @csrf_exempt.
+                     An attacker can forge a cross-site POST to log the victim into the attacker's account. -->
+                <form method="POST" action="{% url 'accounts:quick_login' %}">
+                    <div class="mb-3">
+                        <label class="form-label text-light">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter Username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-light">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-gold w-100 mt-3">Quick Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

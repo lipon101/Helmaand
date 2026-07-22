@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Promo Code | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="gold-text mb-3">Promo Code Validator</h2>
+                <p class="text-secondary">Enter a promo code to check if it's valid.</p>
+                <form method="GET" action="{% url 'shop:promo' %}">
+                    <div class="input-group mb-3">
+                        <input type="text" name="code" class="form-control" placeholder="e.g. SUMMER25" value="{{ code }}" required>
+                        <button class="btn btn-gold" type="submit">Validate</button>
+                    </div>
+                </form>
+
+                {% if result %}
+                <hr class="border-secondary">
+                <div class="alert {% if 'Valid promo code!' in result %}alert-success{% else %}alert-info{% endif %} mt-3">
+                    <strong>Result:</strong> {{ result }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card card-dark p-3">
+                <p class="text-secondary small mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Only <strong>"Valid"</strong> or <strong>"Invalid"</strong> is returned —
+                    no error messages. This is a <em>time-based blind</em> injection point.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

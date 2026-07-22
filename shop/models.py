@@ -63,3 +63,14 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name} ({self.rating}/5)"
+
+
+class Promo(models.Model):
+    """Promo codes used for the time-based blind SQLi challenge."""
+    code = models.CharField(max_length=50, unique=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.code} ({self.discount}% off)"

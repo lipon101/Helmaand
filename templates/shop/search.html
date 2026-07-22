@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Search | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="gold-text mb-4 text-center">Product Search</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form method="GET" action="{% url 'shop:product_search' %}">
+                <div class="input-group mb-4">
+                    <input type="text" name="q" class="form-control" placeholder="Search products..." value="{{ query }}" required>
+                    <button class="btn btn-gold" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if query %}
+    <h4 class="text-light mb-3">Results for "<span class="gold-text">{{ query }}</span>"</h4>
+    <div class="row g-4">
+        {% for product in results %}
+        <div class="col-md-4">
+            <div class="card card-dark h-100 p-3">
+                <div class="card-body">
+                    <h5 class="card-title text-light">{{ product.name }}</h5>
+                    <p class="text-secondary small">{{ product.description|truncatewords:15 }}</p>
+                    <p class="gold-text fw-bold">${{ product.price }}</p>
+                    {% if product.slug %}
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-outline-gold btn-sm">View Details</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted">No products found.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

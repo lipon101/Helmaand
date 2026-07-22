@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="gold-text mb-4">Dashboard</h1>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <a href="/admin/" class="text-decoration-none">
+                <div class="card card-dark p-4 shadow h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-cog fa-2x gold-text mb-3"></i>
+                        <h5 class="text-light">Django Admin</h5>
+                        <p class="text-secondary small">Manage products, users, and orders</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'security:lab_index' %}" class="text-decoration-none">
+                <div class="card card-dark p-4 shadow h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-flask fa-2x text-danger mb-3"></i>
+                        <h5 class="text-light">Security Lab</h5>
+                        <p class="text-secondary small">CTF challenges: XSS, SQLi, CSRF</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'shop:shop_catalog' %}" class="text-decoration-none">
+                <div class="card card-dark p-4 shadow h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-shopping-bag fa-2x gold-text mb-3"></i>
+                        <h5 class="text-light">Shop Catalog</h5>
+                        <p class="text-secondary small">Browse all products</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

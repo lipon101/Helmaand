@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Denied | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-dark p-5 shadow">
+                <i class="fas fa-lock text-danger" style="font-size: 3rem;"></i>
+                <h2 class="text-danger mt-3">Access Denied</h2>
+                <p class="text-secondary">You don't have permission to view this page.</p>
+                <a href="{% url 'security:lab_index' %}" class="btn btn-outline-gold btn-sm mt-2">
+                    <i class="fas fa-arrow-left"></i> Back to Lab
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

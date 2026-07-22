@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Change Email | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="gold-text mb-3">Change Email Address</h2>
+                <p class="text-secondary">Current email: <strong>{{ user.email }}</strong></p>
+                <hr class="border-secondary">
+                <!-- VULNERABLE (CSRF): no {% csrf_token %} + view is @csrf_exempt -->
+                <form method="POST" action="{% url 'accounts:change_email' %}">
+                    <div class="mb-3">
+                        <label class="form-label text-light">New Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="Enter new email" required>
+                    </div>
+                    <button type="submit" class="btn btn-gold w-100">Update Email</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

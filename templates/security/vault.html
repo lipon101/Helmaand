@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Vault | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-dark p-5 shadow-lg text-center">
+                <div class="mb-4">
+                    <i class="fas fa-vault text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h1 class="gold-text display-5 fw-bold mb-3">VAULT UNLOCKED</h1>
+                <p class="text-secondary fs-5 mb-4">You found the hidden vault. Not many make it this far.</p>
+
+                <div class="card card-dark p-4 mb-4" style="border-color: var(--primary-gold);">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h3 class="gold-text fw-bold mb-0">5</h3>
+                            <p class="text-secondary small mb-0">XSS Challenges</p>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h3 class="gold-text fw-bold mb-0">5</h3>
+                            <p class="text-secondary small mb-0">SQLi Challenges</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="gold-text fw-bold mb-0">5</h3>
+                            <p class="text-secondary small mb-0">CSRF Challenges</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-dark border-warning">
+                    <p class="text-light mb-0">
+                        <i class="fas fa-shield-alt text-warning"></i>
+                        Flag format: <code class="gold-text">HLMD&#123;...&#125;</code>
+                    </p>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <p class="text-muted small mb-1">
+                    <i class="fas fa-code"></i>
+                    This security lab was crafted and engineered by
+                </p>
+                <h2 class="gold-text fw-bold mb-0">0xlipon</h2>
+                <p class="text-secondary small mt-2">
+                    <a href="https://github.com/lipon101/Helmaand" class="text-secondary" target="_blank">
+                        <i class="fab fa-github"></i> lipon101/Helmaand
+                    </a>
+                </p>
+
+                <div class="mt-4">
+                    <a href="{% url 'security:lab_index' %}" class="btn btn-outline-gold btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Lab
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

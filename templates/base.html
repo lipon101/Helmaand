@@ -25,7 +25,9 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'shop:home' %}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'shop:shop_catalog' %}">Shop All</a></li>
-                    
+                    <li class="nav-item"><a class="nav-link" href="{% url 'shop:track_order' %}">Track Order</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'shop:product_gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="{% url 'security:lab_index' %}">Security Lab</a></li>
                 </ul>
                 <div class="d-flex align-items-center">
                     {% if user.is_authenticated %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Filter Products | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="gold-text mb-4 text-center">Product Filter</h2>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="btn-group w-100" role="group">
+                <a href="{% url 'shop:category_filter' %}?sort=name" class="btn btn-outline-gold btn-sm">Name</a>
+                <a href="{% url 'shop:category_filter' %}?sort=price" class="btn btn-outline-gold btn-sm">Price</a>
+                <a href="{% url 'shop:category_filter' %}?sort=created_at" class="btn btn-outline-gold btn-sm">Newest</a>
+            </div>
+            <p class="text-secondary small mt-2 text-center">
+                The <code>?sort=</code> parameter is passed directly to the ORDER BY clause.
+            </p>
+        </div>
+    </div>
+
+    {% if error_message %}
+    <!-- VULNERABLE (SQLi - Error-based): the raw database error is reflected
+         to the user, leaking schema/table/column information. -->
+    <div class="alert alert-danger">
+        <strong>Database Error:</strong>
+        <pre class="mb-0 mt-2 text-warning">{{ error_message }}</pre>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card card-dark h-100 p-3">
+                <div class="card-body">
+                    <h5 class="card-title text-light">{{ product.name }}</h5>
+                    <p class="text-secondary small">{{ product.description|truncatewords:15 }}</p>
+                    <p class="gold-text fw-bold">${{ product.price }}</p>
+                    {% if product.slug %}
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-outline-gold btn-sm">View Details</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted">No products found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

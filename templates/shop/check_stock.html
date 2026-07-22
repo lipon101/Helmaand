@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Check Stock | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="gold-text mb-3">Stock Checker</h2>
+                <p class="text-secondary">Enter a product ID to check availability.</p>
+                <form method="GET" action="{% url 'shop:check_stock' %}">
+                    <div class="input-group mb-3">
+                        <input type="text" name="id" class="form-control" placeholder="Product ID (e.g. 1)" value="{{ product_id }}" required>
+                        <button class="btn btn-gold" type="submit">Check</button>
+                    </div>
+                </form>
+
+                {% if error_message %}
+                <div class="alert alert-danger mt-3">
+                    <strong>Error:</strong>
+                    <pre class="mb-0 mt-2">{{ error_message }}</pre>
+                </div>
+                {% endif %}
+
+                {% if stock_info %}
+                <hr class="border-secondary">
+                <div class="alert alert-info mt-3">
+                    <strong>Result:</strong> {{ stock_info }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card card-dark p-3">
+                <p class="text-secondary small mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Only <strong>"In Stock"</strong> or <strong>"Out of Stock"</strong> is returned —
+                    no product details. This is a <em>blind</em> injection point.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
