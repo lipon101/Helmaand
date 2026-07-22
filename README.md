@@ -207,31 +207,53 @@ python manage.py shell               # Interactive Django shell
 
 Settings live in `perfect/settings.py`. Key environment variables:
 
-| Variable                | Default | Description                              |
-|-------------------------|---------|------------------------------------------|
-| `DJANGO_DEBUG`          | `True`  | Enable/disable debug mode                |
-| `DJANGO_ALLOWED_HOSTS`  | *(empty)* | Comma-separated list of allowed hosts  |
+| Variable                    | Default             | Description                              |
+|-----------------------------|---------------------|------------------------------------------|
+| `DJANGO_SECRET_KEY`         | `dev-only-change-me` | Django secret key (generate for prod)   |
+| `DJANGO_DEBUG`              | `True`              | Enable/disable debug mode                |
+| `DJANGO_ALLOWED_HOSTS`      | *(empty)*           | Comma-separated list of allowed hosts    |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | *(empty)*         | Comma-separated HTTPS origins for CSRF   |
 
 ---
 
-## 🌐 Deploy on Render (Free Tier)
+## 🌐 Deploy on Render
 
-1. Push your code to GitHub.
-2. Create a new **Web Service** on [Render](https://render.com/) and connect the repo.
-3. Set the build command:
+This project ships with a [`render.yaml`](render.yaml) Blueprint for one-click deploys, plus a [`Procfile`](Procfile) and [`runtime.txt`](runtime.txt).
+
+### Quick start (Blueprint — recommended)
+
+1. Push your code to GitHub (repo root should contain `manage.py`).
+2. On [Render](https://dashboard.render.com/), click **New → Blueprint** and select this repo.
+3. Render reads `render.yaml` and auto-configures the web service. Adjust the service name if you like.
+4. Set the hostname you'll receive (e.g. `helmaand.onrender.com`) in two env vars before the first deploy:
+   - `DJANGO_ALLOWED_HOSTS=your-service.onrender.com`
+   - `DJANGO_CSRF_TRUSTED_ORIGINS=https://your-service.onrender.com`
+5. Click **Apply**. Render builds, migrates, seeds CTF data, and starts gunicorn.
+
+### Manual setup (Web Service)
+
+1. On Render, click **New → Web Service** and connect the repo.
+2. **Runtime:** Python 3 (Render reads `runtime.txt`).
+3. **Build Command:**
    ```bash
    pip install -r requirements.txt
+   python manage.py collectstatic --noinput
    python manage.py migrate
    python manage.py seed_data
-   python manage.py collectstatic --noinput
    ```
-4. Set the start command:
+4. **Start Command:**
    ```bash
    gunicorn perfect.wsgi:application
    ```
-5. Set environment variables:
-   - `DJANGO_DEBUG=False`
-   - `DJANGO_ALLOWED_HOSTS=your-app.onrender.com`
+5. **Environment variables:**
+   | Variable | Value | Notes |
+   |---|---|---|
+   | `DJANGO_SECRET_KEY` | *(click Generate)* | Render can generate a secure value |
+   | `DJANGO_DEBUG` | `False` | Disable debug in production |
+   | `DJANGO_ALLOWED_HOSTS` | `your-service.onrender.com` | Comma-separated |
+   | `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://your-service.onrender.com` | Needed for POST forms over HTTPS |
+
+> ⚠️ Render free-tier instances use an ephemeral disk. The bundled SQLite DB resets on every deploy/restart. For persistent CTF data, attach a Render Postgres database and update `DATABASES` in `settings.py`, or accept the reseed on each cold start (the build command runs `seed_data` automatically).
 
 ---
 
