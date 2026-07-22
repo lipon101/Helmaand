@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Shop Catalog | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="gold-text mb-4 text-center">All Products</h2>
+
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card card-dark h-100 p-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-light">{{ product.name }}</h5>
+                    <p class="text-secondary small">{{ product.description|truncatewords:15 }}</p>
+                    <p class="gold-text fw-bold">${{ product.price }}</p>
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-outline-gold btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="fs-5 text-light">No products available in the store yet.</p>
+            <p class="text-secondary">You can add new products in the <a href="/admin/" class="gold-text fw-bold">Django Admin Panel</a>!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

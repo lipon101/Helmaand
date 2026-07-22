@@ -1,0 +1,82 @@
+:root {
+    --primary-gold: #D4AF37;
+    --dark-gold: #AA7C11;
+    --black-bg: #121212;
+    --card-dark: #1E1E1E;
+    --text-gold: #FFD700;
+}
+
+body {
+    background-color: var(--black-bg);
+    color: #F8F9FA;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: #000000;
+    border-bottom: 2px solid var(--primary-gold);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--primary-gold) !important;
+    font-size: 1.6rem;
+}
+
+.nav-link {
+    color: #E0E0E0 !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-gold) !important;
+}
+
+/* Buttons */
+.btn-gold {
+    background-color: var(--primary-gold);
+    color: #000;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background-color: var(--dark-gold);
+    color: #FFF;
+}
+
+.btn-outline-gold {
+    border: 1px solid var(--primary-gold);
+    color: var(--primary-gold);
+}
+
+.btn-outline-gold:hover {
+    background-color: var(--primary-gold);
+    color: #000;
+}
+
+/* Cards & Containers */
+.card-dark {
+    background-color: var(--card-dark);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #FFF;
+}
+
+.card-dark:hover {
+    border-color: var(--primary-gold);
+}
+
+.gold-text {
+    color: var(--primary-gold);
+}
+
+/* Footer */
+footer {
+    background-color: #0A0A0A;
+    border-top: 1px solid #222;
+}

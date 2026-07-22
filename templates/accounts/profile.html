@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="gold-text mb-3">User Profile</h2>
+                <p class="text-secondary"><strong>Username:</strong> {{ user.username }}</p>
+                <p class="text-secondary"><strong>Email:</strong> {{ user.email }}</p>
+                <hr class="border-secondary">
+                <h4 class="gold-text mb-3">Update Shipping Info</h4>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ p_form.as_p }}
+                    <button type="submit" class="btn btn-gold mt-2">Save Profile Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

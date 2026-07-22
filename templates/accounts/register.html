@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="text-center gold-text mb-4">Create an Account</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label text-light">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-gold w-100 mt-3">Register</button>
+                </form>
+                <p class="text-center text-muted mt-3">
+                    Already have an account? <a href="{% url 'accounts:login' %}" class="gold-text">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

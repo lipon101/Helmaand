@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Helmaand | Luxury Fashion {% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <!-- Hero Banner -->
+    <div class="p-5 mb-4 rounded-3 card-dark shadow-lg">
+        <h1 class="display-4 fw-bold gold-text">HELMAAND LUXURY</h1>
+        <p class="fs-5 text-secondary">Modern Fashion meets Luxury</p>
+        <a href="{% url 'shop:shop_catalog' %}" class="btn btn-gold btn-lg me-2 mt-3">Explore Collection</a>
+        
+    </div>
+
+    <!-- Featured Products Section -->
+    <h2 class="gold-text mt-5 mb-4">Featured Collections</h2>
+    <div class="row g-4">
+        {% for product in featured_products %}
+        <div class="col-md-4">
+            <div class="card card-dark h-100 p-3">
+                <div class="card-body">
+                    <h5 class="card-title text-light">{{ product.name }}</h5>
+                    <p class="gold-text font-weight-bold">${{ product.price }}</p>
+                    <a href="{% url 'shop:product_detail' product.slug %}" class="btn btn-outline-gold btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">
+            <p>No products available yet. You can add products through the Django Admin panel at <a href="/admin/" class="gold-text">/admin/</a>!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
