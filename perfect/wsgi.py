@@ -1,5 +1,5 @@
 """
-WSGI config for Helmaand project.
+WSGI config for perfect project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Helmaand.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'perfect.settings')
 
 application = get_wsgi_application()
