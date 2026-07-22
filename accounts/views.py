@@ -7,8 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import UserRegisterForm, ProfileUpdateForm
 from .models import Profile
 from security.ctf_flags import (
-    CSRF_POST, CSRF_GET, CSRF_LOGIN, CSRF_LOGOUT, CSRF_PASSWORD,
-    XSS_SELF,
+    CSRF_POST, CSRF_GET, CSRF_PASSWORD,
 )
 
 
@@ -58,11 +57,6 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    """
-    VULNERABLE (XSS - Self): The profile page renders the logged-in user's
-    username with |safe and sets a flag cookie. A user who registers with a
-    username containing an XSS payload will execute JS on their own profile.
-    """
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
@@ -73,12 +67,9 @@ def profile_view(request):
     else:
         p_form = ProfileUpdateForm(instance=profile)
 
-    response = render(request, 'accounts/profile.html', {
+    return render(request, 'accounts/profile.html', {
         'p_form': p_form,
     })
-    # CTF: flag cookie — exfiltrate via Self-XSS (document.cookie)
-    response.set_cookie('ctf_xss_self', XSS_SELF)
-    return response
 
 
 @csrf_exempt
@@ -122,45 +113,6 @@ def reset_preferences_view(request):
     # CTF: flag revealed — CSRF GET succeeded
     messages.info(request, f"Flag: {CSRF_GET}")
     return redirect('accounts:profile')
-
-
-@csrf_exempt
-def quick_login_view(request):
-    """
-    VULNERABLE (CSRF - Login CSRF): The login form has no CSRF token and the
-    view is @csrf_exempt, so an attacker can forge a cross-site login request.
-    The attacker logs the victim into the attacker's own account (e.g., to
-    plant data or exploit trust features that appear only when "logged in").
-    """
-    if request.user.is_authenticated:
-        return redirect('shop:home')
-
-    if request.method == 'POST':
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.info(request, f"Welcome back, {username}!")
-            # CTF: flag revealed — Login CSRF succeeded
-            messages.success(request, f"Flag: {CSRF_LOGIN}")
-            return redirect('shop:home')
-        messages.error(request, "Invalid username or password.")
-    return render(request, 'accounts/quick_login.html')
-
-
-@login_required
-def force_logout_view(request):
-    """
-    VULNERABLE (CSRF - Logout via GET): Logs out the current user on a plain
-    GET request with no CSRF protection. A victim can be forcibly logged out
-    by visiting a crafted link or an <img> tag pointing here.
-    """
-    logout(request)
-    messages.warning(request, "You have been forcibly logged out.")
-    # CTF: flag revealed — Logout CSRF succeeded
-    messages.info(request, f"Flag: {CSRF_LOGOUT}")
-    return redirect('accounts:login')
 
 
 @csrf_exempt

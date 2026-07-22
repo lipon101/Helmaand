@@ -22,13 +22,10 @@
                 <hr class="border-secondary mt-4">
                 <div class="mt-3">
                     <p class="text-secondary small mb-2">Welcome back!</p>
-                    <!-- VULNERABLE (XSS - Attribute): the name parameter is reflected into the
-                         input value attribute without escaping quotes. Break out with: " onmouseover="alert(1) -->
                     <input type="text"
                            class="form-control"
-                           value="{{ name|safe }}"
+                           value="{{ name }}"
                            placeholder="Your name">
-                    <p class="text-secondary small mt-2">Try: <code>?name=" onmouseover="alert(document.cookie)</code></p>
                 </div>
                 {% endif %}
             </div>

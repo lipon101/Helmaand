@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from shop.models import Category, Product, Review, Promo
+from shop.models import Category, Product, Promo
 from accounts.models import Profile
 from security.models import CTFFlag
 from security.ctf_flags import ALL_FLAGS
@@ -107,24 +107,13 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("Created promo codes: SUMMER25, WELCOME10, VIP50"))
 
-        # --- Seed all 15 CTF flags into the CTFFlag table ---
+        # --- Seed all CTF flags into the CTFFlag table ---
         for challenge_id, (flag, category, difficulty) in ALL_FLAGS.items():
             CTFFlag.objects.update_or_create(
                 challenge_id=challenge_id,
                 defaults={"flag": flag, "category": category, "difficulty": difficulty},
             )
         self.stdout.write(self.style.SUCCESS(f"Seeded {len(ALL_FLAGS)} CTF flags into security_ctfflag table."))
-
-        # --- Sample XSS review (demonstration) ---
-        jacket = Product.objects.filter(slug="luxury-leather-jacket").first()
-        if jacket and not Review.objects.filter(product=jacket, user=demo).exists():
-            Review.objects.create(
-                product=jacket,
-                user=demo,
-                rating=5,
-                comment="<b>Great jacket!</b> <script>alert('XSS demo by demo user')</script>",
-            )
-            self.stdout.write(self.style.WARNING("Created sample XSS review on Luxury Leather Jacket."))
 
         self.stdout.write(self.style.SUCCESS("Seed complete!"))
         self.stdout.write("")
@@ -135,7 +124,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.HTTP_INFO("── Flag Format ──"))
         self.stdout.write("  All flags: HLMD{...}")
         self.stdout.write("")
-        self.stdout.write(self.style.HTTP_INFO("── Challenges (15) ──"))
-        self.stdout.write("  XSS  (5): Stored, Reflected, DOM, Attribute, Self")
+        self.stdout.write(self.style.HTTP_INFO("── Challenges (11) ──"))
+        self.stdout.write("  XSS  (3): Stored, Reflected, DOM")
         self.stdout.write("  SQLi (5): UNION, Error, Blind, Time-based, Auth Bypass")
-        self.stdout.write("  CSRF (5): POST, GET, Login, Logout, Password Change")
+        self.stdout.write("  CSRF (3): POST, GET, Password Change")

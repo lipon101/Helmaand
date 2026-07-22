@@ -8,8 +8,7 @@
         <div class="col-md-8">
             <div class="card card-dark p-4 shadow">
                 <h2 class="gold-text mb-3">User Profile</h2>
-                <!-- VULNERABLE (XSS - Self): username rendered with |safe -->
-                <p class="text-secondary"><strong>Username:</strong> <span class="text-light">{{ user.username|safe }}</span></p>
+                <p class="text-secondary"><strong>Username:</strong> <span class="text-light">{{ user.username }}</span></p>
                 <p class="text-secondary"><strong>Email:</strong> {{ user.email }}</p>
                 <hr class="border-secondary">
                 <h4 class="gold-text mb-3">Update Shipping Info</h4>

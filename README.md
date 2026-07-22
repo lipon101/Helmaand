@@ -2,8 +2,6 @@
 
 **CTF e-Commerce Platform** — a Django 6.0 clothing/apparel storefront with **intentionally vulnerable** endpoints for security training and capture-the-flag exercises.
 
-> ⚠️ **WARNING**: This application contains real, exploitable vulnerabilities (XSS, SQLi, CSRF). It is designed for **educational and authorized security testing only**. Never deploy on a public network without isolation.
-
 Built with:
 - 🐍 Python 3.12+
 - 🌐 Django 6.0.7

@@ -6,7 +6,7 @@ from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product, Category, Review, Promo
 from security.ctf_flags import (
-    XSS_STORED, XSS_REFLECTED, XSS_DOM, XSS_ATTRIBUTE,
+    XSS_STORED, XSS_REFLECTED, XSS_DOM,
     SQLI_UNION, SQLI_ERROR, SQLI_BLIND, SQLI_TIME, SQLI_AUTH,
 )
 
@@ -238,13 +238,10 @@ def newsletter_signup(request):
     elif name:
         subscribed = True
 
-    response = render(request, 'shop/newsletter.html', {
+    return render(request, 'shop/newsletter.html', {
         'name': name,
         'subscribed': subscribed,
     })
-    # CTF: flag cookie — exfiltrate via attribute XSS (document.cookie)
-    response.set_cookie('ctf_xss_attribute', XSS_ATTRIBUTE)
-    return response
 
 
 def promo_validator(request):

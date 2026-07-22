@@ -717,10 +717,4 @@ The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST p
 
 ---
 
-## ⚠️ Disclaimer
-
-This application is **intentionally vulnerable** and designed solely for educational and CTF training purposes. **Do not deploy this on a production server or expose it to the internet.** All vulnerabilities are real and exploitable.
-
----
-
 *Helmaand CTF — Built for security learning and practice.*
