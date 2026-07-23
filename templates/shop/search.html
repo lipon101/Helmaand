@@ -16,6 +16,13 @@
         </div>
     </div>
 
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <strong>Database Error:</strong>
+        <pre class="mb-0 mt-2 text-warning">{{ error_message }}</pre>
+    </div>
+    {% endif %}
+
     {% if query %}
     <h4 class="text-light mb-3">Results for "<span class="gold-text">{{ query }}</span>"</h4>
     <div class="row g-4">

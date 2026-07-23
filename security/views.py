@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 
 def lab_index(request):
-    """Security Lab hub — lists all 15 CTF challenges grouped by category."""
+    """Security Lab hub — lists all 11 CTF challenges grouped by category."""
     challenges = [
         # ───────────────────── XSS (5) ─────────────────────
         {

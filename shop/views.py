@@ -68,6 +68,7 @@ def product_search(request):
     """
     query = request.GET.get('q', '')
     results = []
+    error_message = None
     if query:
         # NOTE: intentionally vulnerable — f-string interpolation into SQL
         sql = (
@@ -75,15 +76,19 @@ def product_search(request):
             f"WHERE is_active = 1 AND name LIKE '%{query}%' "
             f"ORDER BY created_at DESC"
         )
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            columns = [c[0] for c in cursor.description]
-            rows = cursor.fetchall()
-        results = [dict(zip(columns, row)) for row in rows]
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                columns = [c[0] for c in cursor.description]
+                rows = cursor.fetchall()
+            results = [dict(zip(columns, row)) for row in rows]
+        except Exception as e:
+            error_message = str(e)
 
     return render(request, 'shop/search.html', {
         'query': query,
         'results': results,
+        'error_message': error_message,
     })
 
 

