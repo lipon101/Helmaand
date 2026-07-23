@@ -396,11 +396,11 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 
 4. Click "Staff Login". The page's JavaScript:
    - Reads the username and password from the form
-   - Base64-encodes them as `admin' OR '1'='1|anything`
-   - Sets the `_ctf_payload` cookie with the encoded payload
-   - Submits the form with only a harmless `_bypass=1` parameter (no SQLi visible in the URL)
+   - Hex-encodes them as `61646d696e27204f52202731273d27317c616e797468696e67` (no SQLi keywords visible to the WAF)
+   - Sets the `_ctf_payload` cookie with the hex-encoded payload
+   - Submits the form with only a harmless `_go=1` parameter (no SQLi visible in the URL)
 
-5. The server decodes the cookie from base64, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
+5. The server decodes the cookie from hex, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
 
 6. A flash message appears on the redirect page:
    ```
@@ -409,7 +409,7 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 
 #### Why It Works
 
-The staff login form's JavaScript intercepts the form submission and base64-encodes the payload into a browser cookie (`_ctf_payload`). The server decodes the cookie and interpolates the values directly into a raw SQL query using f-string formatting, allowing SQL injection. By delivering the payload via a cookie instead of URL parameters or POST body, the WAF never sees the SQLi pattern — it only inspects URLs and POST bodies, not cookie values.
+The staff login form's JavaScript intercepts the form submission and hex-encodes the payload into a browser cookie (`_ctf_payload`). Hex encoding produces only the characters `0-9` and `a-f`, which no WAF recognizes as containing SQLi patterns. The server decodes the cookie and interpolates the values directly into a raw SQL query using f-string formatting, allowing SQL injection. By delivering the payload via a cookie in hex encoding, the WAF never detects the attack.
 
 #### Why It Works
 
