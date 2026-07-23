@@ -91,7 +91,7 @@ def lab_index(request):
             'category': 'SQLi',
             'endpoint': '/staff-login/',
             'description': 'The staff login form builds a raw SQL query by concatenating the username and password. A classic SQL injection in the username field can bypass authentication and log in without a valid password.',
-            'hint': 'The query is SELECT * FROM auth_user WHERE username=\'USER\' AND password=\'PASS\'. The WAF blocks SQLi in URLs and POST bodies. Visit <code>/staff-login/encode/</code> to auto-exploit (sets payload cookie and redirects). Or run <code>document.cookie="_ctf_payload="+btoa("admin\' OR \'1\'=\'1|anything")+"; path=/"</code> in browser console, then visit <code>/staff-login/</code>.',
+            'hint': 'The query is SELECT * FROM auth_user WHERE username=\'USER\' AND password=\'PASS\'. The WAF blocks SQLi in URLs and POST bodies. The login form has JavaScript that bypasses the WAF: it encodes your input as a cookie before submit. Just type the SQLi payload directly in the username field: <code>admin\' OR \'1\'=\'1</code>, any password, and submit. The JS handles the WAF bypass transparently.',
             'objective': 'Log in to the staff area without knowing any password.',
             'flag_hint': 'After bypassing auth, the page shows the flag in a success flash message.',
         },

@@ -388,17 +388,17 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
    ```sql
    SELECT * FROM auth_user WHERE username = '{username}' AND password = '{password}' AND is_staff = 1 LIMIT 1
    ```
-2. The WAF blocks SQLi patterns (`' OR 1=1`, `--`) in both GET query strings and POST bodies. To bypass the WAF, the payload is delivered via a **browser cookie** — WAFs never inspect cookie values.
+2. The WAF blocks SQLi patterns (`' OR 1=1`, `--`) in both GET query strings and POST bodies. The login form handles this automatically: JavaScript on the form encodes your input into a **browser cookie** before submitting — WAFs never inspect cookie values.
 
-3. **Method 1 -- Use the built-in encoder (easiest):**
-   Visit **http://127.0.0.1:8000/staff-login/encode/** — it sets a cookie with the base64-encoded payload and redirects to the staff login page. The flag appears immediately.
+3. Simply type the SQLi payload directly in the username field on the page:
+   - **Username:** `admin' OR '1'='1`
+   - **Password:** `anything`
 
-4. **Method 2 -- Manual cookie setup:**
-   Open your browser console and run:
-   ```javascript
-   document.cookie = "_ctf_payload=" + btoa("admin' OR '1'='1|anything") + "; path=/";
-   ```
-   Then visit **http://127.0.0.1:8000/staff-login/** — the view reads the cookie and injects the decoded values into the raw SQL query.
+4. Click "Staff Login". The page's JavaScript:
+   - Reads the username and password from the form
+   - Base64-encodes them as `admin' OR '1'='1|anything`
+   - Sets the `_ctf_payload` cookie with the encoded payload
+   - Submits the form with only a harmless `_bypass=1` parameter (no SQLi visible in the URL)
 
 5. The server decodes the cookie from base64, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
 
@@ -406,6 +406,10 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
    ```
    Flag: HLMD{4uth_byp4ss_m4st3r_k3y}
    ```
+
+#### Why It Works
+
+The staff login form's JavaScript intercepts the form submission and base64-encodes the payload into a browser cookie (`_ctf_payload`). The server decodes the cookie and interpolates the values directly into a raw SQL query using f-string formatting, allowing SQL injection. By delivering the payload via a cookie instead of URL parameters or POST body, the WAF never sees the SQLi pattern — it only inspects URLs and POST bodies, not cookie values.
 
 #### Why It Works
 

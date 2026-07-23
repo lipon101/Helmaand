@@ -15,5 +15,4 @@ urlpatterns = [
     path('newsletter/', views.newsletter_signup, name='newsletter'),
     path('promo/', views.promo_validator, name='promo'),
     path('staff-login/', views.staff_login_view, name='staff_login'),
-    path('staff-login/encode/', views.staff_login_encode, name='staff_login_encode'),
 ]

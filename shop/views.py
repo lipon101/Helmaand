@@ -291,13 +291,8 @@ def staff_login_view(request):
     by concatenating the username and password fields. A classic injection in the
     username field bypasses authentication entirely.
 
-    The WAF blocks SQLi patterns in URL query strings AND POST bodies.
-    To bypass the WAF, the payload is delivered via a browser cookie.
-    WAFs never inspect cookie values, so the payload passes through invisible.
-
-    WAF-safe flow:
-        1. Visit /staff-login/encode/ — sets _ctf_payload cookie and redirects here
-        2. This view reads the cookie, decodes base64, injects into raw SQL
+    WAF bypass: The form JavaScript sets the payload as a cookie before submit.
+    The WAF inspects URLs and POST bodies but never inspects cookies.
     """
     username = ''
     password = ''
@@ -365,20 +360,3 @@ def staff_login_view(request):
     return render(request, 'shop/staff_login.html', {
         'error_message': error_message,
     })
-
-
-def staff_login_encode(request):
-    """
-    WAF bypass helper: sets a cookie with the base64-encoded SQLi payload,
-    then redirects to /staff-login/. The WAF inspects URLs and POST bodies
-    but NEVER inspects cookie values — the payload is invisible to it.
-    """
-    import base64
-    username = request.GET.get('username', "admin' OR '1'='1")
-    password = request.GET.get('password', 'anything')
-    raw = f"{username}|{password}"
-    token = base64.b64encode(raw.encode()).decode()
-    response = redirect('shop:staff_login')
-    # Set cookie with the payload — WAF cannot see this
-    response.set_cookie('_ctf_payload', token, max_age=300)
-    return response
