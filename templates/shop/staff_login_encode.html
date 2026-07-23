@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Login -- Payload Encoder | Helmaand{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card card-dark p-4 shadow">
+                <h2 class="text-center gold-text mb-3">Staff Login -- WAF Bypass Encoder</h2>
+                <p class="text-center mb-4" style="color: #aaa;">
+                    The WAF blocks SQLi patterns in raw URL query strings.<br>
+                    This tool base64-encodes your payload into a single <code style="color:#e0a0ff;">_token</code> parameter
+                    that the WAF cannot inspect.
+                </p>
+
+                <div class="mb-4 p-3" style="background: #1a2a1a; border: 1px solid #2a5a2a; border-radius: 6px;">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle text-success me-2 mt-1"></i>
+                        <div>
+                            <strong style="color: #8f8;">How it works:</strong>
+                            <ol class="mb-0 mt-1" style="color: #aaa; font-size: 0.9rem;">
+                                <li>The server decodes <code style="color:#e0a0ff;">_token</code> from base64 into <code style="color:#e0a0ff;">username|password</code></li>
+                                <li>It injects the decoded values into a raw SQL query (intentionally vulnerable)</li>
+                                <li>The WAF never sees the SQLi pattern because it is base64-encoded</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 p-3" style="background: #1a1a2a; border: 1px solid #2a2a5a; border-radius: 6px;">
+                    <strong style="color: #88f;">Raw payload:</strong>
+                    <pre class="mb-0 mt-1" style="background: transparent; color: #ccc; font-size: 0.9rem;">{{ raw }}</pre>
+                </div>
+
+                <div class="mb-3 p-3" style="background: #2a2a1a; border: 1px solid #5a5a2a; border-radius: 6px;">
+                    <strong style="color: #ff8;">Base64 token:</strong>
+                    <pre class="mb-0 mt-1" style="background: transparent; color: #ccc; font-size: 0.9rem;">{{ token }}</pre>
+                </div>
+
+                <div class="mb-4 p-3" style="background: #1a2a1a; border: 2px solid #4a8a4a; border-radius: 6px;">
+                    <strong style="color: #8f8;">Open this URL in your browser:</strong>
+                    <div class="mt-2">
+                        <code id="safe-url" style="color: #8f8; font-size: 1rem; word-break: break-all;">{{ safe_url }}</code>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('safe-url').textContent).then(()=>this.textContent='Copied!')" class="btn btn-sm btn-outline-success mt-2">
+                        <i class="fas fa-copy me-1"></i> Copy URL
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <a href="{% url 'shop:staff_login' %}?_token={{ token }}" class="btn btn-gold">
+                        <i class="fas fa-sign-in-alt me-1"></i> Open Payload Now
+                    </a>
+                    <a href="{% url 'shop:staff_login' %}" class="btn btn-outline-light ms-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

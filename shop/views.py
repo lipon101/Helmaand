@@ -289,16 +289,36 @@ def staff_login_view(request):
     by concatenating the username and password fields. A classic injection in the
     username field bypasses authentication entirely.
 
-    Uses GET parameters so the payload travels in the URL query string, which
-    passes through most WAFs without triggering POST-body SQLi rules.
+    The WAF blocks SQLi patterns (OR 1=1, --, etc.) even in GET query strings.
+    To bypass the WAF, the payload is base64-encoded into a single _token param.
+    The WAF only sees _token=<random-looking-string> and passes it through.
 
-    Example payload (paste in browser URL bar):
-        /staff-login/?username=admin' OR '1'='1&password=anything
+    WAF-safe payload:
+        Visit /staff-login/encode/ to generate the safe URL, then open it.
     """
-    error_message = None
-    if request.method == 'GET' and request.GET.get('username'):
+    username = ''
+    password = ''
+
+    # Accept base64-encoded payload via _token (WAF-safe)
+    token = request.GET.get('_token', '')
+    if token:
+        try:
+            import base64
+            decoded = base64.b64decode(token).decode('utf-8')
+            if '|' in decoded:
+                username, password = decoded.split('|', 1)
+            else:
+                username = decoded
+                password = ''
+        except Exception:
+            pass
+    elif request.GET.get('username'):
+        # Direct params (works locally, blocked by WAF on Render)
         username = request.GET.get('username', '')
         password = request.GET.get('password', '')
+
+    error_message = None
+    if username:
         # NOTE: intentionally vulnerable — raw concatenation into SQL
         sql = (
             f"SELECT * FROM auth_user "
@@ -325,4 +345,19 @@ def staff_login_view(request):
 
     return render(request, 'shop/staff_login.html', {
         'error_message': error_message,
+    })
+
+
+def staff_login_encode(request):
+    """Helper: generates a WAF-safe /staff-login/ URL with base64-encoded payload."""
+    import base64
+    username = request.GET.get('username', "admin' OR '1'='1")
+    password = request.GET.get('password', 'anything')
+    raw = f"{username}|{password}"
+    token = base64.b64encode(raw.encode()).decode()
+    safe_url = f"/staff-login/?_token={token}"
+    return render(request, 'shop/staff_login_encode.html', {
+        'raw': raw,
+        'token': token,
+        'safe_url': safe_url,
     })

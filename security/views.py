@@ -91,7 +91,7 @@ def lab_index(request):
             'category': 'SQLi',
             'endpoint': '/staff-login/',
             'description': 'The staff login form builds a raw SQL query by concatenating the username and password. A classic SQL injection in the username field can bypass authentication and log in without a valid password.',
-            'hint': 'The query is SELECT * FROM auth_user WHERE username=\'USER\' AND password=\'PASS\'. Paste this URL directly in your browser: <code>/staff-login/?username=admin\' OR \'1\'=\'1&password=anything</code> — the GET parameters bypass WAF POST-body inspection.',
+            'hint': 'The query is SELECT * FROM auth_user WHERE username=\'USER\' AND password=\'PASS\'. The WAF blocks SQLi patterns in raw URLs. Visit <code>/staff-login/encode/</code> to generate a WAF-safe base64-encoded payload URL. Or manually: encode <code>admin\' OR \'1\'=\'1|anything</code> in base64 and pass it as <code>_token=<base64></code>.',
             'objective': 'Log in to the staff area without knowing any password.',
             'flag_hint': 'After bypassing auth, the page shows the flag in a success flash message.',
         },
