@@ -289,14 +289,16 @@ def staff_login_view(request):
     by concatenating the username and password fields. A classic injection in the
     username field bypasses authentication entirely.
 
-    Example payload:
-        username: admin' OR '1'='1       password: anything
-        username: admin'--                password: anything
+    Uses GET parameters so the payload travels in the URL query string, which
+    passes through most WAFs without triggering POST-body SQLi rules.
+
+    Example payload (paste in browser URL bar):
+        /staff-login/?username=admin' OR '1'='1&password=anything
     """
     error_message = None
-    if request.method == 'POST':
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
+    if request.method == 'GET' and request.GET.get('username'):
+        username = request.GET.get('username', '')
+        password = request.GET.get('password', '')
         # NOTE: intentionally vulnerable — raw concatenation into SQL
         sql = (
             f"SELECT * FROM auth_user "
@@ -310,12 +312,10 @@ def staff_login_view(request):
                 row = cursor.fetchone()
             if row:
                 user_dict = dict(zip(columns, row))
-                # Fetch the actual Django user object for login
                 from django.contrib.auth.models import User
                 user = User.objects.get(id=user_dict['id'])
                 login(request, user)
                 messages.success(request, f"Welcome to the staff area, {user.username}!")
-                # CTF: flag revealed — SQLi auth bypass succeeded
                 messages.info(request, f"Flag: {SQLI_AUTH}")
                 return redirect('shop:home')
             else:

