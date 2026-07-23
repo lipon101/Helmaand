@@ -12,6 +12,15 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Override Bootstrap muted/secondary for dark theme readability */
+.text-muted {
+    color: #999 !important;
+}
+
+.text-secondary {
+    color: #aaa !important;
+}
+
 /* Navbar */
 .navbar-custom {
     background-color: #000000;
@@ -91,4 +100,12 @@ pre {
     font-size: 0.85rem;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+code {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
