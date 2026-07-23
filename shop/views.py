@@ -297,25 +297,14 @@ def staff_login_view(request):
     username = ''
     password = ''
 
-    # Method 1: Read hex-encoded payload from cookie (WAF cannot decode hex)
-    cookie_token = request.COOKIES.get('_ctf_payload', '')
-    if cookie_token:
-        try:
-            decoded = bytes.fromhex(cookie_token).decode('utf-8')
-            if '|' in decoded:
-                username, password = decoded.split('|', 1)
-            else:
-                username = decoded
-                password = ''
-        except Exception:
-            pass
-
-    # Method 2: Read hex-encoded payload via _token GET param
-    if not username:
-        token = request.GET.get('_token', '')
-        if token:
+    # Only process payload when _go=1 (form submission), not on initial page load.
+    # This prevents stale cookies from auto-solving the challenge on every visit.
+    if request.GET.get('_go') == '1':
+        # Method 1: Read hex-encoded payload from cookie (WAF cannot decode hex)
+        cookie_token = request.COOKIES.get('_ctf_payload', '')
+        if cookie_token:
             try:
-                decoded = bytes.fromhex(token).decode('utf-8')
+                decoded = bytes.fromhex(cookie_token).decode('utf-8')
                 if '|' in decoded:
                     username, password = decoded.split('|', 1)
                 else:
@@ -324,10 +313,24 @@ def staff_login_view(request):
             except Exception:
                 pass
 
-    # Method 3: Direct params (works locally, blocked by WAF on Render)
-    if not username and request.GET.get('username'):
-        username = request.GET.get('username', '')
-        password = request.GET.get('password', '')
+        # Method 2: Read hex-encoded payload via _token GET param
+        if not username:
+            token = request.GET.get('_token', '')
+            if token:
+                try:
+                    decoded = bytes.fromhex(token).decode('utf-8')
+                    if '|' in decoded:
+                        username, password = decoded.split('|', 1)
+                    else:
+                        username = decoded
+                        password = ''
+                except Exception:
+                    pass
+
+        # Method 3: Direct params (works locally, blocked by WAF on Render)
+        if not username and request.GET.get('username'):
+            username = request.GET.get('username', '')
+            password = request.GET.get('password', '')
 
     error_message = None
     if username:
