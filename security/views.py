@@ -13,9 +13,9 @@ def lab_index(request):
             'category': 'XSS',
             'endpoint': '/product/luxury-leather-jacket/',
             'description': 'A customer review form stores and displays user comments without sanitization. Inject JavaScript that executes when another user views the product page.',
-            'hint': 'Visit any product detail page and post a review. The comment field is rendered with the |safe filter. Try <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code>.',
-            'objective': 'Exfiltrate the flag cookie from a victim\'s browser via a stored XSS payload.',
-            'flag_hint': 'A flag cookie is set on the product page. Read document.cookie to find it.',
+            'hint': 'Visit any product detail page and post a review. The comment field is rendered with the |safe filter. A hidden element <code>&lt;div id="ctf-flag" data-flag="FLAG"&gt;</code> holds the flag. Try <code>&lt;script&gt;document.location="/?stolen="+document.getElementById("ctf-flag").dataset.flag&lt;/script&gt;</code>.',
+            'objective': 'Exfiltrate the flag from a victim\'s browser via a stored XSS payload.',
+            'flag_hint': 'The flag is in a hidden div\'s data-flag attribute on the product page. Read it via document.getElementById("ctf-flag").dataset.flag.',
         },
         {
             'id': 'xss_reflected',
@@ -24,9 +24,9 @@ def lab_index(request):
             'category': 'XSS',
             'endpoint': '/track/',
             'description': 'The order-tracking page reflects the ?id= GET parameter directly into the HTML without escaping. Craft a URL that executes JavaScript when a victim clicks it.',
-            'hint': 'The tracking_id value is rendered with {{ tracking_id|safe }}. Visit /track/?id=&lt;script&gt;alert(document.cookie)&lt;/script&gt;.',
-            'objective': 'Craft a malicious URL that steals the flag cookie from the victim\'s browser.',
-            'flag_hint': 'A flag cookie is set on the track-order page. Use document.cookie to read it.',
+            'hint': 'The tracking_id value is rendered with {{ tracking_id|safe }}. A hidden element <code>&lt;div id="ctf-flag" data-flag="FLAG"&gt;</code> holds the flag. Try <code>/track/?id=&lt;script&gt;document.location="/?stolen="+document.getElementById("ctf-flag").dataset.flag&lt;/script&gt;</code>.',
+            'objective': 'Craft a malicious URL that steals the flag from the victim\'s browser.',
+            'flag_hint': 'The flag is in a hidden div\'s data-flag attribute on the track page. Read it via document.getElementById("ctf-flag").dataset.flag.',
         },
         {
             'id': 'xss_dom',
@@ -35,9 +35,9 @@ def lab_index(request):
             'category': 'XSS',
             'endpoint': '/gallery/',
             'description': 'The product gallery page reads location.hash and writes it into innerHTML via JavaScript. The payload never reaches the server — this is pure client-side DOM XSS.',
-            'hint': 'Append a hash to the URL: /gallery/#&lt;img src=x onerror="alert(document.cookie)"&gt;. The page JS does el.innerHTML = hash with no sanitization.',
+            'hint': 'Append a hash to the URL: /gallery/#&lt;img src=x onerror="document.location=\'/?stolen=\'+document.cookie"&gt;. The page JS does el.innerHTML = hash with no sanitization. The flag is in a cookie named <code>ctf_xss_dom</code>.',
             'objective': 'Execute JavaScript via the URL hash fragment and read the flag cookie.',
-            'flag_hint': 'A flag cookie is set on the gallery page. The DOM XSS sink lets you run JS to read it.',
+            'flag_hint': 'A flag cookie (ctf_xss_dom) is set on the gallery page. The DOM XSS sink lets you run JS to read it.',
         },
         # ──────────────────── SQLi (5) ────────────────────
         {

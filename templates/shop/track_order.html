@@ -3,6 +3,13 @@
 {% block title %}Track Order | Helmaand{% endblock %}
 
 {% block content %}
+<!-- CTF: hidden flag element for reflected XSS challenge.
+     The attacker's reflected payload reads this via document.getElementById('ctf-flag').dataset.flag
+     Example attack URL:
+       /track/?id=<script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>
+-->
+<div id="ctf-flag" data-flag="{{ ctf_flag }}" style="display:none;"></div>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-7">

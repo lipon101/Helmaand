@@ -49,9 +49,8 @@ def product_detail(request, slug):
     response = render(request, 'shop/detail.html', {
         'product': product,
         'reviews': reviews,
+        'ctf_flag': XSS_STORED,
     })
-    # CTF: flag cookie — exfiltrate via stored XSS (document.cookie)
-    response.set_cookie('ctf_xss_stored', XSS_STORED)
     return response
 
 
@@ -108,9 +107,8 @@ def track_order(request):
     response = render(request, 'shop/track_order.html', {
         'tracking_id': tracking_id,
         'order_status': order_status,
+        'ctf_flag': XSS_REFLECTED,
     })
-    # CTF: flag cookie — exfiltrate via reflected XSS (document.cookie)
-    response.set_cookie('ctf_xss_reflected', XSS_REFLECTED)
     return response
 
 

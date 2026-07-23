@@ -100,28 +100,26 @@ XSS challenges set a browser cookie containing the flag when you visit the vulne
 | **Difficulty** | Easy |
 | **Category** | XSS |
 | **Vulnerability** | Stored XSS -- review comment rendered with `|safe` filter |
-| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/detail.html` (`{{ review.comment|safe }}`) |
-| **Flag Location** | Cookie `ctf_xss_stored` |
+| **Vulnerable Code** | `shop/views.py` (passes flag to template), `templates/shop/detail.html` (`{{ review.comment|safe }}`) |
+| **Flag Location** | Hidden DOM element `<div id="ctf-flag" data-flag="FLAG">` on product page |
 | **Flag** | `HLMD{st0r3d_c00k13_m0nst3r}` |
 
 #### Step-by-Step Solution
 
 1. **Log in** to the application using `demo` / `demo123` (or any registered account).
 2. Navigate to any product page, e.g. **http://127.0.0.1:8000/product/luxury-leather-jacket/**.
-3. In the review form at the bottom of the page, enter the following payload in the **comment** field:
+3. The page contains a hidden element: `<div id="ctf-flag" data-flag="HLMD{st0r3d_c00k13_m0nst3r}">`.
+4. In the review form at the bottom of the page, enter the following payload in the **comment** field to exfiltrate the flag:
    ```
-   <img src=x onerror="alert(document.cookie)">
+   <script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>
    ```
-4. Submit the review.
-5. Reload the product page -- the malicious JavaScript executes automatically.
-6. An alert box appears showing `document.cookie`, which contains:
-   ```
-   ctf_xss_stored=HLMD{st0r3d_c00k13_m0nst3r}
-   ```
+5. Submit the review.
+6. Reload the product page -- the stored payload executes and redirects to `/?stolen=HLMD{st0r3d_c00k13_m0nst3r}`.
+7. The flag appears in the URL query string.
 
 #### Why It Works
 
-The `detail.html` template renders review comments using the `|safe` filter, which tells Django to **not** auto-escape HTML. Any HTML/JavaScript in the comment is rendered and executed in every visitor's browser.
+The `detail.html` template renders review comments using the `|safe` filter, which tells Django to **not** auto-escape HTML. Any HTML/JavaScript in the comment is rendered and executed in every visitor's browser. The flag is stored in a hidden DOM element's `data-flag` attribute, which the attacker's script reads and exfiltrates.
 
 > **Note:** A sample XSS review (`<script>alert('XSS demo by demo user')</script>`) is pre-seeded on the Luxury Leather Jacket product.
 
@@ -134,26 +132,24 @@ The `detail.html` template renders review comments using the `|safe` filter, whi
 | **Difficulty** | Easy |
 | **Category** | XSS |
 | **Vulnerability** | Reflected XSS -- `?id=` query parameter rendered with `|safe` |
-| **Vulnerable Code** | `shop/views.py` (sets cookie), `templates/shop/track_order.html` (`{{ tracking_id|safe }}`) |
-| **Flag Location** | Cookie `ctf_xss_reflected` |
+| **Vulnerable Code** | `shop/views.py` (passes flag to template), `templates/shop/track_order.html` (`{{ tracking_id|safe }}`) |
+| **Flag Location** | Hidden DOM element `<div id="ctf-flag" data-flag="FLAG">` on track page |
 | **Flag** | `HLMD{r3fl3ct3d_gl4ss_sh4tt3r}` |
 
 #### Step-by-Step Solution
 
-1. Visit the order tracking page with a malicious payload in the `id` query parameter:
+1. The page contains a hidden element: `<div id="ctf-flag" data-flag="HLMD{r3fl3ct3d_gl4ss_sh4tt3r}">`.
+2. Visit the order tracking page with a malicious payload in the `id` query parameter:
    ```
-   http://127.0.0.1:8000/track/?id=<script>alert(document.cookie)</script>
+   http://127.0.0.1:8000/track/?id=<script>document.location='/?stolen='+document.getElementById('ctf-flag').dataset.flag</script>
    ```
-2. The page renders the `id` parameter directly into the HTML without escaping.
-3. The JavaScript executes immediately, showing an alert with `document.cookie`.
-4. The cookie contains:
-   ```
-   ctf_xss_reflected=HLMD{r3fl3ct3d_gl4ss_sh4tt3r}
-   ```
+3. The page renders the `id` parameter directly into the HTML without escaping.
+4. The JavaScript executes immediately, reading the hidden flag element and redirecting to `/?stolen=HLMD{r3fl3ct3d_gl4ss_sh4tt3r}`.
+5. The flag appears in the URL query string.
 
 #### Why It Works
 
-The `track_order.html` template takes the `tracking_id` value from the URL query string and renders it with `|safe`, allowing injected `<script>` tags to execute.
+The `track_order.html` template takes the `tracking_id` value from the URL query string and renders it with `|safe`, allowing injected `<script>` tags to execute. The flag is in a hidden DOM element that the attacker's script reads and exfiltrates.
 
 ---
 
@@ -165,25 +161,22 @@ The `track_order.html` template takes the `tracking_id` value from the URL query
 | **Category** | XSS |
 | **Vulnerability** | DOM-based XSS -- `location.hash` written to `innerHTML` via client-side JavaScript |
 | **Vulnerable Code** | `templates/shop/gallery.html` (JS reads `location.hash` -> `el.innerHTML = hash;`) |
-| **Flag Location** | Cookie `ctf_xss_dom` |
+| **Flag Location** | Cookie `ctf_xss_dom` (only XSS challenge that uses a cookie) |
 | **Flag** | `HLMD{d0m_s1nk_b0w_bre4ch}` |
 
 #### Step-by-Step Solution
 
 1. Visit the gallery page with a payload in the URL fragment (after `#`):
    ```
-   http://127.0.0.1:8000/gallery/#<img src=x onerror="alert(document.cookie)">
+   http://127.0.0.1:8000/gallery/#<img src=x onerror="document.location='/?stolen='+document.cookie">
    ```
 2. Client-side JavaScript in `gallery.html` reads `location.hash`, strips the `#`, and assigns it directly to an element's `innerHTML`.
-3. The `onerror` event fires, executing `alert(document.cookie)`.
-4. The cookie contains:
-   ```
-   ctf_xss_dom=HLMD{d0m_s1nk_b0w_bre4ch}
-   ```
+3. The `onerror` event fires, reading the cookie and redirecting to `/?stolen=ctf_xss_dom=HLMD{d0m_s1nk_b0w_bre4ch}; ...`.
+4. The flag appears in the URL query string.
 
 #### Why It Works
 
-Unlike stored or reflected XSS, DOM-based XSS occurs entirely on the **client side**. The server never sees the payload -- it's in the URL fragment (`#`), which is not sent to the server. The page's JavaScript reads `location.hash` and writes it to `innerHTML` without sanitization.
+Unlike stored or reflected XSS, DOM-based XSS occurs entirely on the **client side**. The server never sees the payload -- it's in the URL fragment (`#`), which is not sent to the server. The page's JavaScript reads `location.hash` and writes it to `innerHTML` without sanitization. This is the only XSS challenge that uses a cookie for flag delivery, since the payload never reaches the server.
 
 > **Note:** The fragment (`#...`) is not sent to the server in HTTP requests, so server-side WAFs or frameworks cannot detect this attack. The cookie is set by the view on page load.
 
