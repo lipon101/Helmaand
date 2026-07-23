@@ -245,6 +245,36 @@ This project ships with a [`render.yaml`](render.yaml) Blueprint for one-click d
 
 > Render free-tier instances use an ephemeral disk. The bundled SQLite DB resets on every deploy/restart. For persistent CTF data, attach a Render Postgres database and update `DATABASES` in `settings.py`, or accept the reseed on each cold start (the build command runs `seed_data` automatically).
 
+### WAF / Cloudflare Configuration (Important)
+
+This is an **intentionally vulnerable CTF platform**. Cloudflare's Web Application Firewall (WAF) will block SQL injection payloads (e.g. `' OR 1=1 --`) with a **403 Forbidden** before they reach your app. You must configure WAF exceptions for CTF endpoints:
+
+**Cloudflare Dashboard -> Security -> WAF -> Custom Rules:**
+
+Create a rule to **Skip** (bypass) WAF for these paths:
+
+| Endpoint | Challenge |
+|----------|-----------|
+| `/search/*` | UNION SQLi |
+| `/filter/*` | Error-based SQLi |
+| `/stock/*` | Blind Boolean SQLi |
+| `/promo/*` | Time-based SQLi |
+| `/staff-login/*` | Auth Bypass SQLi |
+
+**Quick skip rule example:**
+```
+(http.request.uri.path contains "/search/" or
+ http.request.uri.path contains "/filter/" or
+ http.request.uri.path contains "/stock/" or
+ http.request.uri.path contains "/promo/" or
+ http.request.uri.path contains "/staff-login/")
+-> Action: Skip
+```
+
+Alternatively, **disable Cloudflare WAF entirely** for this project (acceptable for a CTF lab). Go to Security -> WAF -> Overview and toggle it off.
+
+> **Note:** If you are not using Cloudflare, the WAF may come from your hosting provider. Check their security settings.
+
 ---
 
 ## Test Credentials
