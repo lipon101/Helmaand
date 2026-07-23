@@ -18,8 +18,14 @@
 
                 {% if result %}
                 <hr class="border-secondary">
-                <div class="alert {% if 'Valid promo code!' in result %}alert-success{% else %}alert-info{% endif %} mt-3">
-                    <strong>Result:</strong> {{ result }}
+                <div class="mt-3 p-3" style="background: {% if 'Valid promo code!' in result %}#1a3a1a{% else %}#1a2a3a{% endif %}; border: 1px solid {% if 'Valid promo code!' in result %}#2a6a2a{% else %}#2a4a6a{% endif %}; border-radius: 6px;">
+                    <div class="d-flex align-items-start">
+                        <i class="fas {% if 'Valid promo code!' in result %}fa-check-circle text-success{% else %}fa-times-circle text-info{% endif %} me-2 mt-1"></i>
+                        <div>
+                            <strong class="{% if 'Valid promo code!' in result %}text-success{% else %}text-info{% endif %}">Result:</strong>
+                            <span class="text-light ms-1">{{ result }}</span>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>

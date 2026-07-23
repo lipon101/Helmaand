@@ -51,9 +51,10 @@
     <div class="container mt-3">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="p-3 mb-2 d-flex align-items-start" style="background: {% if 'success' in message.tags %}#1a3a1a; border: 1px solid #2a6a2a{% elif 'error' in message.tags %}#2a1a1a; border: 1px solid #5a2a2a{% elif 'warning' in message.tags %}#3a2a1a; border: 1px solid #6a5a2a{% else %}#1a2a3a; border: 1px solid #2a4a6a{% endif %}; border-radius: 6px;" role="alert">
+                    <i class="fas {% if 'success' in message.tags %}fa-check-circle text-success{% elif 'error' in message.tags %}fa-exclamation-circle text-danger{% elif 'warning' in message.tags %}fa-exclamation-triangle text-warning{% else %}fa-info-circle text-info{% endif %} me-2 mt-1"></i>
+                    <span class="text-light flex-grow-1">{{ message }}</span>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="alert" style="filter: invert(1);"></button>
                 </div>
             {% endfor %}
         {% endif %}

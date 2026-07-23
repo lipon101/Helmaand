@@ -17,16 +17,27 @@
                 </form>
 
                 {% if error_message %}
-                <div class="alert alert-danger mt-3">
-                    <strong>Error:</strong>
-                    <pre class="mb-0 mt-2">{{ error_message }}</pre>
+                <div class="mt-3 p-3" style="background: #2a1a1a; border: 1px solid #5a2a2a; border-radius: 6px;">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-exclamation-triangle text-danger me-2 mt-1"></i>
+                        <div>
+                            <strong class="text-danger">Error:</strong>
+                            <pre class="mb-0 mt-1" style="background: transparent; color: #f8d7da; font-size: 0.85rem; white-space: pre-wrap; word-break: break-word;">{{ error_message }}</pre>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if stock_info %}
                 <hr class="border-secondary">
-                <div class="alert alert-info mt-3">
-                    <strong>Result:</strong> {{ stock_info }}
+                <div class="mt-3 p-3" style="background: #1a2a3a; border: 1px solid #2a4a6a; border-radius: 6px;">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-box-open text-info me-2 mt-1"></i>
+                        <div>
+                            <strong class="text-info">Result:</strong>
+                            <span class="text-light ms-1">{{ stock_info }}</span>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
