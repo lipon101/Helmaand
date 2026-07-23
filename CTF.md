@@ -433,13 +433,14 @@ CSRF challenges exploit missing CSRF token validation on state-changing operatio
 | **Category** | CSRF |
 | **Vulnerability** | `@csrf_exempt` on state-changing POST (changes user email) |
 | **Vulnerable Code** | `accounts/views.py` (`@csrf_exempt` on `change_email` view) |
-| **Flag Location** | Flash message after redirect |
+| **Flag Location** | Flash message after redirect (only appears on POST without CSRF token) |
 | **Flag** | `HLMD{f0rg3d_p0st_3m41l_h1j4ck}` |
 
 #### Step-by-Step Solution
 
 1. The victim must be logged in to Helmaand.
-2. The attacker creates and hosts the following malicious HTML page on any external server:
+2. The legitimate form at `/accounts/change-email/` includes a CSRF token — normal usage works but does **not** reveal the flag.
+3. The attacker creates and hosts the following malicious HTML page on any external server. Note: **no CSRF token** is included:
    ```html
    <html>
    <body onload="document.forms[0].submit()">
@@ -449,17 +450,17 @@ CSRF challenges exploit missing CSRF token validation on state-changing operatio
    </body>
    </html>
    ```
-3. The victim visits the attacker's page.
-4. The JavaScript auto-submits the form, sending a POST request to `/accounts/change-email/` that changes the victim's email to `hacker@evil.com`.
-5. Because the view is decorated with `@csrf_exempt`, no CSRF token is required.
-6. The victim is redirected to their profile page, which shows the flash message:
+4. The victim visits the attacker's page.
+5. The JavaScript auto-submits the form, sending a POST request to `/accounts/change-email/` that changes the victim's email to `hacker@evil.com`.
+6. Because the view is decorated with `@csrf_exempt`, no CSRF token is required.
+7. The victim is redirected to their profile page, which shows the flash message:
    ```
    Flag: HLMD{f0rg3d_p0st_3m41l_h1j4ck}
    ```
 
 #### Why It Works
 
-The `change_email` view is marked `@csrf_exempt`, meaning Django does not validate the CSRF token. Any website can submit a form to this endpoint and change the victim's email. The template also lacks a `{% csrf_token %}` tag.
+The `change_email` view is marked `@csrf_exempt`, meaning Django does not validate the CSRF token. Any website can submit a form to this endpoint and change the victim's email. The flag only appears when the POST is received **without** a CSRF token — simulating a real cross-origin forged request. Normal form submissions on the site include the token, so they work but don't leak the flag.
 
 ---
 
@@ -471,26 +472,29 @@ The `change_email` view is marked `@csrf_exempt`, meaning Django does not valida
 | **Category** | CSRF |
 | **Vulnerability** | State-changing GET request (clears profile shipping fields) with no CSRF protection |
 | **Vulnerable Code** | `accounts/views.py` (`reset_preferences` view handles GET) |
-| **Flag Location** | Flash message after redirect |
+| **Flag Location** | Flash message after redirect (only appears when no Referer header) |
 | **Flag** | `HLMD{g3t_r3qu3st_s1l3nt_w1p3}` |
 
 #### Step-by-Step Solution
 
 1. The victim must be logged in to Helmaand.
-2. The attacker embeds the following on any external page (no form submission needed):
+2. The flag only appears when the request has **no Referer header** — this simulates cross-origin access (e.g., an `<img>` tag on an external page, or typing the URL directly in the browser).
+3. The attacker embeds the following on any external page (no form submission needed):
    ```html
    <img src="http://127.0.0.1:8000/accounts/reset-preferences/" style="display:none">
    ```
-3. When the victim loads the attacker's page, their browser automatically sends a GET request to `/accounts/reset-preferences/` (to "load the image").
-4. The view clears the victim's phone, address, city, and postal_code fields.
-5. The victim is redirected to their profile page showing the flash message:
+4. When the victim loads the attacker's page, their browser automatically sends a GET request to `/accounts/reset-preferences/` (to "load the image").
+5. The view clears the victim's phone, address, city, and postal_code fields.
+6. The victim is redirected to their profile page showing the flash message:
    ```
    Flag: HLMD{g3t_r3qu3st_s1l3nt_w1p3}
    ```
 
+> **Alternative:** Visit `/accounts/reset-preferences/` directly in your browser's address bar (no Referer). This also triggers the flag.
+
 #### Why It Works
 
-The `reset_preferences` view performs a **state-changing operation (deleting data) via a GET request**, which violates REST principles and CSRF best practices. Browsers send GET requests automatically when loading images, so a simple `<img>` tag on any page can trigger the deletion -- no JavaScript or form submission required.
+The `reset_preferences` view performs a **state-changing operation (deleting data) via a GET request**, which violates REST principles and CSRF best practices. Browsers send GET requests automatically when loading images, so a simple `<img>` tag on any page can trigger the deletion -- no JavaScript or form submission required. The flag only appears when no Referer header is present, simulating an external `<img>` tag load or direct URL navigation.
 
 ---
 
@@ -502,13 +506,14 @@ The `reset_preferences` view performs a **state-changing operation (deleting dat
 | **Category** | CSRF |
 | **Vulnerability** | `@csrf_exempt` on password-change POST |
 | **Vulnerable Code** | `accounts/views.py` (`@csrf_exempt` on `change_password` view) |
-| **Flag Location** | Flash message after redirect (`messages.info`) |
+| **Flag Location** | Flash message after redirect (only appears on POST without CSRF token) |
 | **Flag** | `HLMD{p4ssw0rd_r3s3t_p0wn3d}` |
 
 #### Step-by-Step Solution
 
 1. The victim must be logged in to Helmaand.
-2. The attacker creates and hosts the following malicious HTML page:
+2. The legitimate form at `/accounts/change-password/` includes a CSRF token — normal usage works but does **not** reveal the flag.
+3. The attacker creates and hosts the following malicious HTML page. Note: **no CSRF token** is included:
    ```html
    <html>
    <body onload="document.forms[0].submit()">
@@ -518,17 +523,17 @@ The `reset_preferences` view performs a **state-changing operation (deleting dat
    </body>
    </html>
    ```
-3. The victim visits the attacker's page.
-4. The form auto-submits, sending a POST request that changes the victim's password to `pwned123`.
-5. The session is kept alive via `update_session_auth_hash()`, so the victim isn't logged out.
-6. The victim is redirected to their profile page showing the flash message:
+4. The victim visits the attacker's page.
+5. The form auto-submits, sending a POST request that changes the victim's password to `pwned123`.
+6. The session is kept alive via `update_session_auth_hash()`, so the victim isn't logged out.
+7. The victim is redirected to their profile page showing the flash message:
    ```
    Flag: HLMD{p4ssw0rd_r3s3t_p0wn3d}
    ```
 
 #### Why It Works
 
-The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST parameter. Any website can submit a form that silently changes the victim's password. The use of `update_session_auth_hash()` ensures the victim's session isn't invalidated, making the attack invisible -- the victim won't notice until the attacker logs in with the new password.
+The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST parameter. Any website can submit a form that silently changes the victim's password. The flag only appears when the POST is received **without** a CSRF token — simulating a real cross-origin forged request. Normal form submissions on the site include the token, so they work but don't leak the flag. The use of `update_session_auth_hash()` ensures the victim's session isn't invalidated, making the attack invisible.
 
 ---
 
@@ -558,7 +563,7 @@ The `change_password` view is `@csrf_exempt` and accepts a `new_password` POST p
 | **SQLi (4)** | Flag stored in the `description` field of a hidden `shop_product` row (`is_active=0`). Extracted via UNION SELECT. |
 | **SQLi (5-7)** | Flag stored in the `security_ctfflag` database table, keyed by `challenge_id` (`sqli_error`, `sqli_blind`, `sqli_time`). Extracted via error-based, blind boolean, or time-based techniques. |
 | **SQLi (8)** | Flag displayed as a Django flash message (`messages.info`) after successful authentication bypass. |
-| **CSRF (9-11)** | Flag displayed as a Django flash message (`messages.info` / `messages.success`) after the forged request succeeds. |
+| **CSRF (9-11)** | Flag displayed as a Django flash message only when the request simulates cross-origin (no CSRF token for POST, no Referer for GET). Normal form usage does not reveal the flag. |
 
 ---
 

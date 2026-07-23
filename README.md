@@ -94,7 +94,7 @@ All flags use the format **`HLMD{...}`**.
 
 **How to test:**
 
-9. **CSRF POST** -- The change-email view is `@csrf_exempt` with no CSRF token. Build an auto-submitting form on another origin:
+9. **CSRF POST** -- The change-email view is `@csrf_exempt`. The form includes a CSRF token for normal usage (works, no flag), but the endpoint accepts POSTs without one. Build an auto-submitting form **without** a CSRF token on another origin:
    ```html
    <html><body onload="document.forms[0].submit()">
      <form action="http://127.0.0.1:8000/accounts/change-email/" method="POST">
@@ -102,8 +102,9 @@ All flags use the format **`HLMD{...}`**.
      </form>
    </body></html>
    ```
-10. **CSRF GET** -- The reset-preferences endpoint performs a state change via plain GET. Embed `<img src="http://127.0.0.1:8000/accounts/reset-preferences/">` on any page.
-11. **Password Change CSRF** -- The change-password view is `@csrf_exempt` and accepts the new password via POST. Forge a cross-site POST with `new_password=<known_value>`.
+   The flag appears only when the POST has no CSRF token.
+10. **CSRF GET** -- The reset-preferences endpoint performs a state change via plain GET. Embed `<img src="http://127.0.0.1:8000/accounts/reset-preferences/">` on any page, or visit the URL directly. The flag appears only when there's no Referer header (cross-origin).
+11. **Password Change CSRF** -- The change-password view is `@csrf_exempt`. The form includes a CSRF token for normal usage (works, no flag). Forge a cross-site POST **without** a CSRF token with `new_password=<known_value>`.
 
 ---
 

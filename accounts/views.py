@@ -80,6 +80,10 @@ def change_email_view(request):
     protection on this state-changing POST endpoint. A malicious page can
     submit a cross-site form POST here to silently change the logged-in user's
     email.
+
+    The flag only appears when the POST lacks the CSRF token — simulating
+    a cross-origin forged request. Normal form submissions (with the token)
+    work but don't reveal the flag.
     """
     if request.method == 'POST':
         new_email = request.POST.get('email', '').strip()
@@ -87,8 +91,9 @@ def change_email_view(request):
             request.user.email = new_email
             request.user.save()
             messages.success(request, "Your email has been updated successfully!")
-            # CTF: flag revealed — CSRF POST succeeded
-            messages.info(request, f"Flag: {CSRF_POST}")
+            # Flag only on cross-origin (no CSRF token in request)
+            if not request.POST.get('csrfmiddlewaretoken'):
+                messages.info(request, f"Flag: {CSRF_POST}")
             return redirect('accounts:profile')
         messages.error(request, "Email field cannot be empty.")
     return render(request, 'accounts/change_email.html')
@@ -102,6 +107,11 @@ def reset_preferences_view(request):
     via a simple GET request — no CSRF token, no POST required. A victim
     only needs to visit a crafted link like:
         <img src="https://helmaand.local/accounts/reset-preferences/">
+
+    The flag only appears when the request has no Referer header —
+    simulating cross-origin navigation (e.g., an <img> tag from an external
+    page, or typing the URL directly). Requests from within the site
+    (same-origin) show the warning but not the flag.
     """
     profile, created = Profile.objects.get_or_create(user=request.user)
     profile.phone = ''
@@ -110,8 +120,10 @@ def reset_preferences_view(request):
     profile.postal_code = ''
     profile.save()
     messages.warning(request, "Your shipping preferences have been reset.")
-    # CTF: flag revealed — CSRF GET succeeded
-    messages.info(request, f"Flag: {CSRF_GET}")
+    # Flag only on cross-origin (no Referer — external img tag or direct URL)
+    referer = request.headers.get('Referer', '')
+    if not referer:
+        messages.info(request, f"Flag: {CSRF_GET}")
     return redirect('accounts:profile')
 
 
@@ -122,6 +134,10 @@ def change_password_view(request):
     VULNERABLE (CSRF - Password change): @csrf_exempt disables CSRF protection
     on this state-changing POST endpoint. An attacker can forge a cross-site
     POST to change the victim's password to a known value.
+
+    The flag only appears when the POST lacks the CSRF token — simulating
+    a cross-origin forged request. Normal form submissions (with the token)
+    work but don't reveal the flag.
     """
     if request.method == 'POST':
         new_password = request.POST.get('new_password', '').strip()
@@ -132,8 +148,9 @@ def change_password_view(request):
             from django.contrib.auth import update_session_auth_hash
             update_session_auth_hash(request, request.user)
             messages.success(request, "Your password has been changed successfully!")
-            # CTF: flag revealed — CSRF password change succeeded
-            messages.info(request, f"Flag: {CSRF_PASSWORD}")
+            # Flag only on cross-origin (no CSRF token in request)
+            if not request.POST.get('csrfmiddlewaretoken'):
+                messages.info(request, f"Flag: {CSRF_PASSWORD}")
             return redirect('accounts:profile')
         messages.error(request, "Password field cannot be empty.")
     return render(request, 'accounts/change_password.html')

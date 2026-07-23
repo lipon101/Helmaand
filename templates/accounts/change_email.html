@@ -10,8 +10,9 @@
                 <h2 class="gold-text mb-3">Change Email Address</h2>
                 <p class="text-secondary">Current email: <strong>{{ user.email }}</strong></p>
                 <hr class="border-secondary">
-                <!-- VULNERABLE (CSRF): no {% csrf_token %} + view is @csrf_exempt -->
+                <!-- VULNERABLE (CSRF): @csrf_exempt allows cross-origin POSTs without a token -->
                 <form method="POST" action="{% url 'accounts:change_email' %}">
+                    {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label text-light">New Email</label>
                         <input type="email" name="email" class="form-control" placeholder="Enter new email" required>
