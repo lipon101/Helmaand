@@ -74,10 +74,11 @@ All flags use the format **`HLMD{...}`**.
    ?id=1 AND (SELECT substr(flag,1,1)='H' FROM security_ctfflag WHERE challenge_id='sqli_blind') --
    ```
 7. **Time-based SQLi** -- The promo validator runs `SELECT 1 FROM shop_promo WHERE code='{code}'`. Only "Valid"/"Invalid" is returned. Use a time-delay payload (SQLite: `randomblob`; MySQL: `SLEEP`) and measure response time.
-8. **Auth Bypass SQLi** -- The staff login builds `SELECT * FROM auth_user WHERE username='{username}' AND password='{password}' AND is_staff=1`. The WAF blocks raw SQLi in URLs, so the payload must be base64-encoded into a `_token` parameter. Visit `/staff-login/encode/` to generate the safe URL, or manually:
+8. **Auth Bypass SQLi** -- The staff login builds `SELECT * FROM auth_user WHERE username='{username}' AND password='{password}' AND is_staff=1`. The WAF blocks SQLi in URLs and POST bodies, so the payload is delivered via a **cookie** (WAFs never inspect cookies). Visit `/staff-login/encode/` to auto-exploit, or manually run in browser console:
+   ```javascript
+   document.cookie = "_ctf_payload=" + btoa("admin' OR '1'='1|anything") + "; path=/";
    ```
-   /staff-login/?_token=YWRtaW4nIE9SIDEgJzEnPTEgfGFueXRoaW5n
-   ```
+   Then visit `/staff-login/` — the flag appears in a flash message.
 
 ---
 

