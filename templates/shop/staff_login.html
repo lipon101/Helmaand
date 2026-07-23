@@ -12,7 +12,7 @@
                     Restricted area — staff access only.
                 </p>
                 <form id="login-form" method="GET" action="{% url 'shop:staff_login' %}">
-                    <input type="hidden" name="_bypass" value="1">
+                    <input type="hidden" name="_go" value="1">
                     <div class="mb-3">
                         <label class="form-label text-light">Username</label>
                         <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter Username" required>
@@ -51,12 +51,19 @@
 </div>
 
 <script>
+function toHex(str) {
+    var result = '';
+    for (var i = 0; i < str.length; i++) {
+        var hex = str.charCodeAt(i).toString(16);
+        result += hex.length === 1 ? '0' + hex : hex;
+    }
+    return result;
+}
 document.getElementById('login-form').addEventListener('submit', function(e) {
     var username = document.getElementById('id_username').value;
     var password = document.getElementById('id_password').value;
     var raw = username + '|' + password;
-    var encoded = btoa(raw);
-    document.cookie = '_ctf_payload=' + encoded + '; path=/';
+    document.cookie = '_ctf_payload=' + toHex(raw) + '; path=/';
     document.getElementById('id_username').disabled = true;
     document.getElementById('id_password').disabled = true;
     document.getElementById('waf-notice').style.display = 'block';

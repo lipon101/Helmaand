@@ -297,12 +297,11 @@ def staff_login_view(request):
     username = ''
     password = ''
 
-    # Method 1: Read base64-encoded payload from cookie (WAF-invisible)
+    # Method 1: Read hex-encoded payload from cookie (WAF cannot decode hex)
     cookie_token = request.COOKIES.get('_ctf_payload', '')
     if cookie_token:
         try:
-            import base64
-            decoded = base64.b64decode(cookie_token).decode('utf-8')
+            decoded = bytes.fromhex(cookie_token).decode('utf-8')
             if '|' in decoded:
                 username, password = decoded.split('|', 1)
             else:
@@ -311,13 +310,12 @@ def staff_login_view(request):
         except Exception:
             pass
 
-    # Method 2: Read base64-encoded payload via _token GET param
+    # Method 2: Read hex-encoded payload via _token GET param
     if not username:
         token = request.GET.get('_token', '')
         if token:
             try:
-                import base64
-                decoded = base64.b64decode(token).decode('utf-8')
+                decoded = bytes.fromhex(token).decode('utf-8')
                 if '|' in decoded:
                     username, password = decoded.split('|', 1)
                 else:
